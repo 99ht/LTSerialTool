@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.serialtool.controller.HelloController">
+    <top>
+        <MenuBar fx:id="menuBar" prefWidth="751.0">
+            <menus>
+                <Menu mnemonicParsing="false" text="文件">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="保存为压缩包" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="设置">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="Delete" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="工具">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="About" />
+                    </items>
+                </Menu>
+            <Menu mnemonicParsing="false" text="关于">
+              <items>
+                <MenuItem mnemonicParsing="false" text="Action 1" />
+              </items>
+            </Menu>
+            </menus>
+        </MenuBar>
+    </top>
+    <center>
+        <StackPane BorderPane.alignment="CENTER">
+            <children>
+                <VBox prefHeight="200.0" prefWidth="100.0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" prefHeight="35.0" prefWidth="600.0">
+                            <children>
+                                <Button mnemonicParsing="false" text="Button" />
+                            </children>
+                            <padding>
+                                <Insets left="10.0" />
+                            </padding>
+                        </HBox>
+                        <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                            <items>
+                                <VBox spacing="10.0">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <Label minWidth="40.0" text="串口1:" />
+                                                <ComboBox fx:id="cbSerialList" prefWidth="150.0" />
+                                                <Button fx:id="btnOpenSerial" minWidth="60.0" mnemonicParsing="false" text="打开" />
+                                    <Label maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                                                <Label text="Label" />
+                                                <ComboBox prefWidth="150.0" />
+                                                <Button mnemonicParsing="false" text="Button" />
+                                            </children>
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
+                                        </HBox>
+                                        <HBox>
+                                            <children>
+                                                <Label text="Label" />
+                                                <TextField />
+                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
+                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
+                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <Button mnemonicParsing="false" styleClass="success" text="Button" />
+                                                <Button mnemonicParsing="false" text="Button" />
+                                                <Button mnemonicParsing="false" text="Button" />
+                                                <Button mnemonicParsing="false" text="Button" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                            </padding>
+                                        </HBox>
+                                        <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
+                                            <items>
+                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+                                            </items>
+                                        </SplitPane>
+                                        <HBox>
+                                            <children>
+                                                <Label text="Label" />
+                                                <Label text="Label" />
+                                                <Label text="Label" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                            </padding>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                                <VBox spacing="10.0">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <Label text="Label" />
+                                                <ComboBox prefWidth="150.0" />
+                                                <Button mnemonicParsing="false" text="Button" />
+                                                <Label text="Label" />
+                                                <ComboBox prefWidth="150.0" />
+                                                <Button mnemonicParsing="false" text="Button" />
+                                            </children>
+                                        </HBox>
+                                        <HBox>
+                                            <children>
+                                                <Label text="Label" />
+                                                <TextField />
+                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
+                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
+                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <Button mnemonicParsing="false" text="Button" />
+                                                <Button mnemonicParsing="false" text="Button" />
+                                                <Button mnemonicParsing="false" text="Button" />
+                                                <Button mnemonicParsing="false" text="Button" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                            </padding>
+                                        </HBox>
+                                        <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
+                                            <items>
+                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+                                            </items>
+                                        </SplitPane>
+                                        <HBox>
+                                            <children>
+                                                <Label text="Label" />
+                                                <Label text="Label" />
+                                                <Label text="Label" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                            </padding>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+
+                            </items>
+                        </SplitPane>
+                    </children>
+                </VBox>
+            </children>
+        </StackPane>
+    </center>
+</BorderPane>
