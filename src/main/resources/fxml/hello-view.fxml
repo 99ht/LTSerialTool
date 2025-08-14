@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.serialtool.controller.HelloController">
+<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.HelloController">
     <top>
         <MenuBar fx:id="menuBar" prefWidth="751.0">
             <menus>
@@ -83,10 +83,10 @@
                                             </padding>
                                         </HBox>
                                         <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
-                                            <items>
-                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
-                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
-                                            </items>
+                                 <items>
+                                    <TextArea prefHeight="200.0" prefWidth="200.0" />
+                                    <TextArea prefHeight="200.0" prefWidth="200.0" />
+                                 </items>
                                         </SplitPane>
                                         <HBox>
                                             <children>

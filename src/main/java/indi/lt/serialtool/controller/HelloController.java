@@ -1,6 +1,7 @@
-package indi.lt.serialtool.serialtool.controller;
+package indi.lt.serialtool.controller;
 
 import com.fazecast.jSerialComm.SerialPort;
+import indi.lt.serialtool.ui.TaskHandler;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
@@ -10,6 +11,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuBar;
 import javafx.scene.layout.BorderPane;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -18,6 +21,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class HelloController implements Initializable {
+
+    private final Logger LOG = LogManager.getLogger(HelloController.class);
 
     @FXML
     private BorderPane rootPane;
@@ -30,10 +35,6 @@ public class HelloController implements Initializable {
 
     @FXML
     private Button btnOpenSerial;
-
-    @FXML
-    protected void onHelloButtonClick() {
-    }
 
     public MenuBar getMenuBar() {
         return menuBar;
@@ -56,33 +57,21 @@ public class HelloController implements Initializable {
     }
 
     private void initSerialList() {
-        Task<List<String>> task = new Task<>() {
-            @Override
-            protected List<String> call() throws Exception {
-                List<String> serialList = new ArrayList<>();
-                for (SerialPort serialPort : getSerialPorts()) {
-                    serialList.add(serialPort.getDescriptivePortName());
-                }
-                return serialList;
-            }
-        };
-
-        task.valueProperty().addListener(
-                (observableValue, strings, newVal) -> {
-                    System.out.println("读取完成" + newVal);
-                    cbSerialList.getItems().addAll(newVal);
+        new TaskHandler<List<String>>()
+                .whenCall(() -> {
+                    List<String> serialList = new ArrayList<>();
+                    for (SerialPort serialPort : getSerialPorts()) {
+                        serialList.add(serialPort.getDescriptivePortName());
+                    }
+                    return serialList;
+                }).andThen(val -> {
+                    LOG.info("读取完成" + val);
+                    cbSerialList.getItems().addAll(val);
                     cbSerialList.getSelectionModel().selectFirst();
-                }
-        );
-        new Thread(task).start();
+                }).handle();
     }
 
     private static List<SerialPort> getSerialPorts() {
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         return Arrays.asList(SerialPort.getCommPorts());
     }
 }

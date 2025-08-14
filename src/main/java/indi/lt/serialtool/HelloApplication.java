@@ -1,8 +1,8 @@
-package indi.lt.serialtool.serialtool;
+package indi.lt.serialtool;
 
 import github.nonoas.jfx.flat.ui.theme.LightTheme;
-import indi.lt.serialtool.serialtool.controller.HelloController;
-import indi.lt.serialtool.serialtool.view.BaseStage;
+import indi.lt.serialtool.controller.HelloController;
+import indi.lt.serialtool.view.BaseStage;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
