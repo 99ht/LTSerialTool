@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.HelloController">
+<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.HelloController">
     <top>
         <MenuBar fx:id="menuBar" prefWidth="751.0">
             <menus>
@@ -38,13 +50,13 @@
                     <children>
                         <HBox alignment="CENTER_LEFT" prefHeight="35.0" prefWidth="600.0">
                             <children>
-                                <Button mnemonicParsing="false" text="Button" />
+                                <Button mnemonicParsing="false" text="切换至发送模式" />
                             </children>
                             <padding>
-                                <Insets left="10.0" />
+                                <Insets bottom="2.0" left="10.0" top="2.0" />
                             </padding>
                         </HBox>
-                        <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                        <SplitPane dividerPositions="0.6703296703296704" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                             <items>
                                 <VBox spacing="10.0">
                                     <children>
@@ -54,32 +66,35 @@
                                                 <ComboBox fx:id="cbSerialList" prefWidth="150.0" />
                                                 <Button fx:id="btnOpenSerial" minWidth="60.0" mnemonicParsing="false" text="打开" />
                                     <Label maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
-                                                <Label text="Label" />
+                                                <Label text="波特率:" />
                                                 <ComboBox prefWidth="150.0" />
-                                                <Button mnemonicParsing="false" text="Button" />
+                                                <Button mnemonicParsing="false" text="更多设置" />
                                             </children>
                                  <padding>
-                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    <Insets left="10.0" right="10.0" />
                                  </padding>
                                         </HBox>
-                                        <HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
                                             <children>
-                                                <Label text="Label" />
+                                                <Label text="过滤关键字:" />
                                                 <TextField />
-                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
-                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
-                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
+                                                <CheckBox mnemonicParsing="false" text="HEX显示" />
+                                                <CheckBox mnemonicParsing="false" text="时间戳显示" />
+                                                <CheckBox mnemonicParsing="false" prefHeight="17.0" prefWidth="100.0" text="高亮关键字" />
                                             </children>
+                                 <padding>
+                                    <Insets left="10.0" right="10.0" />
+                                 </padding>
                                         </HBox>
                                         <HBox spacing="10.0">
                                             <children>
-                                                <Button mnemonicParsing="false" styleClass="success" text="Button" />
-                                                <Button mnemonicParsing="false" text="Button" />
-                                                <Button mnemonicParsing="false" text="Button" />
-                                                <Button mnemonicParsing="false" text="Button" />
+                                                <Button mnemonicParsing="false" styleClass="success" text="保存原始" />
+                                                <Button mnemonicParsing="false" text="保存过滤" />
+                                                <Button mnemonicParsing="false" text="恢复滚动" />
+                                                <Button mnemonicParsing="false" text="清空数据" />
                                             </children>
                                             <padding>
-                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                <Insets left="10.0" right="10.0" />
                                             </padding>
                                         </HBox>
                                         <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
@@ -90,9 +105,9 @@
                                         </SplitPane>
                                         <HBox>
                                             <children>
-                                                <Label text="Label" />
-                                                <Label text="Label" />
-                                                <Label text="Label" />
+                                                <Label text="就绪" />
+                                                <Label text="接收量:" />
+                                                <Label text="0B" />
                                             </children>
                                             <padding>
                                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -104,45 +119,52 @@
                                     <children>
                                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                                             <children>
-                                                <Label text="Label" />
+                                                <Label minWidth="40.0" text="串口2:" />
+                                                <ComboBox fx:id="cbSerialList" prefWidth="150.0" />
+                                                <Button fx:id="btnOpenSerial" minWidth="60.0" mnemonicParsing="false" text="打开" />
+                                                <Label maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                                                <Label text="波特率:" />
                                                 <ComboBox prefWidth="150.0" />
-                                                <Button mnemonicParsing="false" text="Button" />
-                                                <Label text="Label" />
-                                                <ComboBox prefWidth="150.0" />
-                                                <Button mnemonicParsing="false" text="Button" />
+                                                <Button mnemonicParsing="false" text="更多设置" />
                                             </children>
+                                            <padding>
+                                                <Insets left="10.0" right="10.0" />
+                                            </padding>
                                         </HBox>
-                                        <HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
                                             <children>
-                                                <Label text="Label" />
+                                                <Label text="过滤关键字:" />
                                                 <TextField />
-                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
-                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
-                                                <CheckBox mnemonicParsing="false" text="CheckBox" />
+                                                <CheckBox mnemonicParsing="false" text="HEX显示" />
+                                                <CheckBox mnemonicParsing="false" text="时间戳显示" />
+                                                <CheckBox mnemonicParsing="false" prefHeight="17.0" prefWidth="100.0" text="高亮关键字" />
                                             </children>
+                                 <padding>
+                                    <Insets left="10.0" right="10.0" />
+                                 </padding>
                                         </HBox>
                                         <HBox spacing="10.0">
                                             <children>
-                                                <Button mnemonicParsing="false" text="Button" />
-                                                <Button mnemonicParsing="false" text="Button" />
-                                                <Button mnemonicParsing="false" text="Button" />
-                                                <Button mnemonicParsing="false" text="Button" />
+                                                <Button mnemonicParsing="false" styleClass="success" text="保存原始" />
+                                                <Button mnemonicParsing="false" text="保存过滤" />
+                                                <Button mnemonicParsing="false" text="恢复滚动" />
+                                                <Button mnemonicParsing="false" text="清空数据" />
                                             </children>
                                             <padding>
-                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                <Insets left="10.0" right="10.0" />
                                             </padding>
                                         </HBox>
                                         <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
                                             <items>
-                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
-                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+                                                <TextArea prefHeight="219.0" prefWidth="341.0" />
+                                                <TextArea prefHeight="200.0" prefWidth="200.0" />
                                             </items>
                                         </SplitPane>
                                         <HBox>
                                             <children>
-                                                <Label text="Label" />
-                                                <Label text="Label" />
-                                                <Label text="Label" />
+                                                <Label text="就绪" />
+                                                <Label text="接收量:" />
+                                                <Label text="0B" />
                                             </children>
                                             <padding>
                                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -150,7 +172,6 @@
                                         </HBox>
                                     </children>
                                 </VBox>
-
                             </items>
                         </SplitPane>
                     </children>
