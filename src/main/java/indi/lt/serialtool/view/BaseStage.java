@@ -1,6 +1,10 @@
 package indi.lt.serialtool.view;
 
 import github.nonoas.jfx.flat.ui.stage.AppStage;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
+
+import java.util.Collections;
 
 /**
  * 程序通用窗口，设置了一系列通用的样式和参数
@@ -14,10 +18,10 @@ public class BaseStage extends AppStage {
 
     public BaseStage() {
         setTitle(TITLE);
-        // Stage stage = getStage(); // 如果没有 getStage()，请改为直接使用父类暴露的 stage 字段
-        // if (stage != null && stage.getScene() != null) {
-        //     stage.getScene().getStylesheets().addAll("css/style.css");
-        // }
-        // addIcons(Collections.singleton(new Image("image/logo.png")));
+        Stage stage = getStage(); // 如果没有 getStage()，请改为直接使用父类暴露的 stage 字段
+        if (stage != null && stage.getScene() != null) {
+            stage.getScene().getStylesheets().addAll("css/style.css");
+        }
+        addIcons(Collections.singleton(new Image("image/logo.png")));
     }
 }
