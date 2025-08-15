@@ -43,7 +43,7 @@ public class SerialReadService extends Service<Void> {
                         Platform.runLater(() -> {
                             targetTextArea.appendText(data);
 
-                            // 限制最大行数
+                            // 限制最大行数为10
                             ObservableList<CharSequence> paragraphs = targetTextArea.getParagraphs();
                             if (paragraphs.size() > maxLines) {
                                 int linesToRemove = paragraphs.size() - maxLines;
