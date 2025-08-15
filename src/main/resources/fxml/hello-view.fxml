@@ -99,7 +99,7 @@
                                         </HBox>
                                         <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
                                  <items>
-                                    <TextArea prefHeight="200.0" prefWidth="200.0" />
+                                    <TextArea fx:id="textAreaOrigin" prefHeight="200.0" prefWidth="200.0" />
                                     <TextArea prefHeight="200.0" prefWidth="200.0" />
                                  </items>
                                         </SplitPane>
@@ -120,8 +120,8 @@
                                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                                             <children>
                                                 <Label minWidth="40.0" text="串口2:" />
-                                                <ComboBox fx:id="cbSerialList" prefWidth="150.0" />
-                                                <Button fx:id="btnOpenSerial" minWidth="60.0" mnemonicParsing="false" text="打开" />
+                                                <ComboBox fx:id="cbSerialList2" prefWidth="150.0" />
+                                                <Button fx:id="btnOpenSerial2" minWidth="60.0" mnemonicParsing="false" text="打开" />
                                                 <Label maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
                                                 <Label text="波特率:" />
                                                 <ComboBox prefWidth="150.0" />

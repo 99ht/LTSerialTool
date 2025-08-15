@@ -1,15 +1,14 @@
 package indi.lt.serialtool.controller;
 
 import com.fazecast.jSerialComm.SerialPort;
+import indi.lt.serialtool.service.SerialReadService;
 import indi.lt.serialtool.ui.TaskHandler;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +33,14 @@ public class HelloController implements Initializable {
     private ComboBox<String> cbSerialList;
 
     @FXML
+    private TextArea textAreaOrigin;
+
+    @FXML
     private Button btnOpenSerial;
+
+    private SerialReadService serialReadService;
+
+    private SerialPort[] ports = new SerialPort[0];
 
     public MenuBar getMenuBar() {
         return menuBar;
@@ -46,14 +52,50 @@ public class HelloController implements Initializable {
         initOpenSerialButton();
     }
 
+    private void openSelectSerial() {
+        SerialPort[] ports = SerialPort.getCommPorts();
+        if (ports.length == 0) {
+            System.out.println("未检测到串口设备");
+        }
+
+        SerialPort comPort = ports[0];
+        comPort.setComPortParameters(1500000, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+        comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
+
+        if (!comPort.openPort()) {
+            System.out.println("串口打开失败");
+        }
+
+        // 创建并启动Service
+        this.serialReadService = new SerialReadService(comPort, textAreaOrigin, 100);
+        serialReadService.start();
+
+        // 后面如果要停止：
+        // service.cancel();
+    }
+
+
     private void initOpenSerialButton() {
         btnOpenSerial.setOnAction(event -> {
             openSerial();
+            if ("打开".equals(btnOpenSerial.getText())) {
+                btnOpenSerial.setText("关闭");
+                openSelectSerial();
+            } else {
+                closeSelectSerial();
+                btnOpenSerial.setText("打开");
+            }
         });
     }
 
+    private void closeSelectSerial() {
+        if (serialReadService != null) {
+            serialReadService.cancel();
+        }
+    }
+
     private void openSerial() {
-        System.out.println("打开" + cbSerialList.getSelectionModel().getSelectedItem());
+        LOG.debug("打开" + cbSerialList.getSelectionModel().getSelectedItem());
     }
 
     private void initSerialList() {
