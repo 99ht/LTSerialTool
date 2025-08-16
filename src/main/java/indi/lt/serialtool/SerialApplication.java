@@ -1,7 +1,7 @@
 package indi.lt.serialtool;
 
 import github.nonoas.jfx.flat.ui.theme.LightTheme;
-import indi.lt.serialtool.controller.HelloController;
+import indi.lt.serialtool.controller.SerialController;
 import indi.lt.serialtool.view.BaseStage;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -10,15 +10,15 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class HelloApplication extends Application {
+public class SerialApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         // 注意资源路径，通常加前导斜杠更稳
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/fxml/hello-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(SerialApplication.class.getResource("/fxml/hello-view.fxml"));
         // 先加载 -> 创建场景图和 Controller 并完成 @FXML 注入
         Parent root = fxmlLoader.load();
         // 再拿 Controller
-        HelloController controller = fxmlLoader.getController();
+        SerialController controller = fxmlLoader.getController();
 
         setUserAgentStylesheet(new LightTheme().getUserAgentStylesheet());
 
