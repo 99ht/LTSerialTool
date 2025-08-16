@@ -55,13 +55,19 @@ public class SerialController implements Initializable {
     }
 
     private void openSelectSerial() {
+        int selectedIndex = cbSerialList.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            LOG.info("请先选择一个串口设备");
+            return;
+        }
+
         SerialPort[] ports = SerialPort.getCommPorts();
         if (ports.length == 0) {
             LOG.info("未检测到串口设备");
             return;
         }
 
-        SerialPort comPort = ports[0];
+        SerialPort comPort = ports[selectedIndex];
         comPort.setComPortParameters(1500000, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
 
