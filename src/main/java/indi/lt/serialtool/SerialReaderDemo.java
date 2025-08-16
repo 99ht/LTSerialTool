@@ -7,7 +7,7 @@ package indi.lt.serialtool;
  */
 import com.fazecast.jSerialComm.SerialPort;
 
-public class SerialReader {
+public class SerialReaderDemo {
     public static void main(String[] args) {
         // 获取所有可用串口
         SerialPort[] ports = SerialPort.getCommPorts();
