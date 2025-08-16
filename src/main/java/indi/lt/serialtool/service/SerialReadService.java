@@ -1,7 +1,6 @@
 package indi.lt.serialtool.service;
 
 import com.fazecast.jSerialComm.SerialPort;
-import indi.lt.serialtool.controller.HelloController;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;

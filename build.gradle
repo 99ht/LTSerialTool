@@ -4,6 +4,7 @@ plugins {
     id 'org.javamodularity.moduleplugin' version '1.8.12'
     id 'org.openjfx.javafxplugin' version '0.0.13'
     id 'org.beryx.jlink' version '2.25.0'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 group 'indi.lt.serialtool'
@@ -18,15 +19,13 @@ ext {
     junitVersion = '5.10.0'
 }
 
-sourceCompatibility = '17'
-targetCompatibility = '17'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
 application {
-    mainClass = 'indi.lt.serialtool.HelloApplication'
+    mainClass = 'indi.lt.serialtool.SerialApplication'
 }
 
 javafx {
@@ -42,6 +41,7 @@ dependencies {
     implementation 'com.h2database:h2:2.2.220'
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 test {
@@ -58,4 +58,7 @@ jlink {
 
 jlinkZip {
     group = 'distribution'
+}
+kotlin {
+    jvmToolchain(17)
 }

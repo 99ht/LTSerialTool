@@ -18,10 +18,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class HelloController implements Initializable {
+public class SerialController implements Initializable {
 
-    private final Logger LOG = LogManager.getLogger(HelloController.class);
+    private final Logger LOG = LogManager.getLogger(SerialController.class);
 
     @FXML
     private BorderPane rootPane;
@@ -53,23 +55,30 @@ public class HelloController implements Initializable {
     }
 
     private void openSelectSerial() {
-        SerialPort[] ports = SerialPort.getCommPorts();
-        if (ports.length == 0) {
-            System.out.println("未检测到串口设备");
+        int selectedIndex = cbSerialList.getSelectionModel().getSelectedIndex();
+        if (selectedIndex < 0) {
+            LOG.info("请先选择一个串口设备");
+            return;
         }
 
-        SerialPort comPort = ports[0];
+        SerialPort[] ports = SerialPort.getCommPorts();
+        if (ports.length == 0) {
+            LOG.info("未检测到串口设备");
+            return;
+        }
+
+        SerialPort comPort = ports[selectedIndex];
         comPort.setComPortParameters(1500000, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
 
         if (!comPort.openPort()) {
-            System.out.println("串口打开失败");
+            LOG.error("串口打开失败");
+            return;
         }
 
         // 创建并启动Service
         this.serialReadService = new SerialReadService(comPort, textAreaOrigin, 100);
         serialReadService.start();
-
         // 后面如果要停止：
         // service.cancel();
     }
@@ -77,7 +86,6 @@ public class HelloController implements Initializable {
 
     private void initOpenSerialButton() {
         btnOpenSerial.setOnAction(event -> {
-            openSerial();
             if ("打开".equals(btnOpenSerial.getText())) {
                 btnOpenSerial.setText("关闭");
                 openSelectSerial();
@@ -94,22 +102,24 @@ public class HelloController implements Initializable {
         }
     }
 
-    private void openSerial() {
-        LOG.debug("打开" + cbSerialList.getSelectionModel().getSelectedItem());
-    }
-
     private void initSerialList() {
         new TaskHandler<List<String>>()
-                .whenCall(() -> {
-                    List<String> serialList = new ArrayList<>();
-                    for (SerialPort serialPort : getSerialPorts()) {
-                        serialList.add(serialPort.getDescriptivePortName());
+                .whenCall(new Supplier<List<String>>() {
+                    @Override
+                    public List<String> get() {
+                        List<String> serialList = new ArrayList<>();
+                        for (SerialPort serialPort : getSerialPorts()) {
+                            serialList.add(serialPort.getDescriptivePortName());
+                        }
+                        return serialList;
                     }
-                    return serialList;
-                }).andThen(val -> {
-                    LOG.info("读取完成" + val);
-                    cbSerialList.getItems().addAll(val);
-                    cbSerialList.getSelectionModel().selectFirst();
+                }).andThen(new Consumer<List<String>>() {
+                    @Override
+                    public void accept(List<String> val) {
+                        LOG.info("读取完成" + val);
+                        cbSerialList.getItems().addAll(val);
+                        cbSerialList.getSelectionModel().selectFirst();
+                    }
                 }).handle();
     }
 
