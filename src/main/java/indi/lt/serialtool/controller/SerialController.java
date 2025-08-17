@@ -53,9 +53,14 @@ public class SerialController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        initSerialList();
-        initOpenSerialButton();
+        refreshSerialList();
         initBautRateList();
+        registerSerialEvent();
+    }
+
+    private void registerSerialEvent() {
+        initSerialComboBoxAction();
+        initOpenSerialButtonAction();
     }
 
     private void openSelectSerial() {
@@ -99,8 +104,10 @@ public class SerialController implements Initializable {
         // service.cancel();
     }
 
-
-    private void initOpenSerialButton() {
+    private void initSerialComboBoxAction() {
+        cbSerialList.setOnShowing(event -> refreshSerialList()); // 每次点击 ComboBox 时刷新串口列表
+    }
+    private void initOpenSerialButtonAction() {
         btnOpenSerial.setOnAction(event -> {
             if ("打开".equals(btnOpenSerial.getText())) {
                 btnOpenSerial.setText("关闭");
@@ -136,7 +143,7 @@ public class SerialController implements Initializable {
         LOG.info("波特率初始化完成：" + cbBautRateList.getItems());
     }
 
-    private void initSerialList() {
+    private void refreshSerialList() {
         new TaskHandler<List<String>>()
                 .whenCall(new Supplier<List<String>>() {
                     @Override
@@ -151,6 +158,7 @@ public class SerialController implements Initializable {
                     @Override
                     public void accept(List<String> val) {
                         LOG.info("读取完成" + val);
+                        cbSerialList.getItems().clear();
                         cbSerialList.getItems().addAll(val);
                         cbSerialList.getSelectionModel().selectFirst();
                     }
