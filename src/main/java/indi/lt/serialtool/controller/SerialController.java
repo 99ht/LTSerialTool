@@ -138,7 +138,7 @@ public class SerialController implements Initializable {
         cbBautRateList.getItems().addAll(baudRates);
 
         // 默认选中 115200
-        cbBautRateList.getSelectionModel().select(Integer.valueOf(115200));
+        cbBautRateList.getSelectionModel().select(Integer.valueOf(1500000));
 
         LOG.info("波特率初始化完成：" + cbBautRateList.getItems());
     }
@@ -150,7 +150,7 @@ public class SerialController implements Initializable {
                     public List<String> get() {
                         List<String> serialList = new ArrayList<>();
                         for (SerialPort serialPort : getSerialPorts()) {
-                            serialList.add(serialPort.getDescriptivePortName());
+                            serialList.add(serialPort.getSystemPortName() + " - " + serialPort.getDescriptivePortName());
                         }
                         return serialList;
                     }
