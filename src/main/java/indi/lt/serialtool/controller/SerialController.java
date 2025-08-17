@@ -3,6 +3,8 @@ package indi.lt.serialtool.controller;
 import com.fazecast.jSerialComm.SerialPort;
 import indi.lt.serialtool.service.SerialReadService;
 import indi.lt.serialtool.ui.TaskHandler;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -53,7 +55,6 @@ public class SerialController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        refreshSerialList();
         initBautRateList();
         registerSerialEvent();
     }
@@ -61,6 +62,7 @@ public class SerialController implements Initializable {
     private void registerSerialEvent() {
         initSerialComboBoxAction();
         initOpenSerialButtonAction();
+        initBautRateComboBoxAction();
     }
 
     private void openSelectSerial() {
@@ -91,7 +93,6 @@ public class SerialController implements Initializable {
             return;
         }
 
-
         if (!comPort.openPort()) {
             LOG.error("串口打开失败");
             return;
@@ -100,13 +101,38 @@ public class SerialController implements Initializable {
         // 创建并启动Service
         this.serialReadService = new SerialReadService(comPort, textAreaOrigin, cbTimeDisplay);
         serialReadService.start();
-        // 后面如果要停止：
-        // service.cancel();
     }
 
     private void initSerialComboBoxAction() {
-        cbSerialList.setOnShowing(event -> refreshSerialList()); // 每次点击 ComboBox 时刷新串口列表
+        // 1. 展开下拉框时刷新列表（保留，但刷新逻辑已优化）
+        cbSerialList.setOnShowing(event -> refreshSerialList());
+
+        cbSerialList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observableValue, String oldVal, String newVal) {
+                if (null != newVal && null != oldVal) {
+                    LOG.debug(oldVal + "->" + newVal);
+                    onSerialPortClicked();
+                }
+            }
+        });
+
+        List<String> serialList = new ArrayList<>();
+        for (SerialPort serialPort : getSerialPorts()) {
+            serialList.add(serialPort.getSystemPortName() + " - " + serialPort.getDescriptivePortName());
+        }
+        cbSerialList.getItems().addAll(serialList);
+        cbSerialList.getSelectionModel().selectFirst();
     }
+
+    private void onSerialPortClicked() {
+        // 手动选中后的逻辑（如切换串口）
+        if (comPort != null && comPort.isOpen()) {
+            closeSelectSerial();
+            openSelectSerial();
+        }
+    }
+
     private void initOpenSerialButtonAction() {
         btnOpenSerial.setOnAction(event -> {
             if ("打开".equals(btnOpenSerial.getText())) {
@@ -119,6 +145,20 @@ public class SerialController implements Initializable {
         });
     }
 
+    private void initBautRateComboBoxAction() {
+        // 监听波特率选中项变化事件
+        cbBautRateList.getSelectionModel().selectedItemProperty().addListener((observable) -> {
+            onBaudRateChanged();
+        });
+    }
+
+    private void onBaudRateChanged() {
+        if (comPort != null && comPort.isOpen()) {
+            closeSelectSerial();
+            openSelectSerial();
+        }
+    }
+
     private void closeSelectSerial() {
         if (serialReadService != null) {
             comPort.closePort();
@@ -128,10 +168,7 @@ public class SerialController implements Initializable {
 
     private void initBautRateList() {
         List<Integer> baudRates = new ArrayList<>(Arrays.asList( //list可以增删改
-                1200, 2400, 4800, 9600,
-                38400, 57600, 115200, 230400,
-                1500000, 2000000, 3000000
-        ));
+                1200, 2400, 4800, 9600, 38400, 57600, 115200, 230400, 1500000, 2000000, 3000000));
 
         // 清空旧的 items 并添加
         cbBautRateList.getItems().clear();
@@ -144,25 +181,28 @@ public class SerialController implements Initializable {
     }
 
     private void refreshSerialList() {
-        new TaskHandler<List<String>>()
-                .whenCall(new Supplier<List<String>>() {
-                    @Override
-                    public List<String> get() {
-                        List<String> serialList = new ArrayList<>();
-                        for (SerialPort serialPort : getSerialPorts()) {
-                            serialList.add(serialPort.getSystemPortName() + " - " + serialPort.getDescriptivePortName());
-                        }
-                        return serialList;
-                    }
-                }).andThen(new Consumer<List<String>>() {
-                    @Override
-                    public void accept(List<String> val) {
-                        LOG.info("读取完成" + val);
-                        cbSerialList.getItems().clear();
-                        cbSerialList.getItems().addAll(val);
-                        cbSerialList.getSelectionModel().selectFirst();
-                    }
-                }).handle();
+        // 刷新前记录当前选中的串口（用于后续恢复）
+        String currentSelected = cbSerialList.getValue();
+
+        new TaskHandler<List<String>>().whenCall(() -> {
+            List<String> serialList = new ArrayList<>();
+            for (SerialPort serialPort : getSerialPorts()) {
+                serialList.add(serialPort.getSystemPortName() + " - " + serialPort.getDescriptivePortName());
+            }
+            return serialList;
+        }).andThen(val -> {
+            LOG.info("读取完成" + val);
+            cbSerialList.getItems().clear();
+            cbSerialList.getItems().addAll(val);
+
+            // 刷新后：如果之前有选中项且仍存在，则恢复选中；否则不自动选中
+            if (currentSelected != null && val.contains(currentSelected)) {
+                cbSerialList.setValue(currentSelected); // 恢复之前的选中项
+            } else {
+                // 首次加载或选中项已消失，可选：不自动选中任何项
+                cbSerialList.getSelectionModel().clearSelection();
+            }
+        }).handle();
     }
 
     private static List<SerialPort> getSerialPorts() {
