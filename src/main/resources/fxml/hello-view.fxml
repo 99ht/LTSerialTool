@@ -67,7 +67,7 @@
                                                 <Button fx:id="btnOpenSerial" minWidth="60.0" mnemonicParsing="false" text="打开" />
                                     <Label maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
                                                 <Label text="波特率:" />
-                                                <ComboBox prefWidth="150.0" />
+                                                <ComboBox fx:id="cbBautRateList" editable="true" prefWidth="150.0" />
                                                 <Button mnemonicParsing="false" text="更多设置" />
                                             </children>
                                  <padding>
@@ -89,9 +89,9 @@
                                         <HBox spacing="10.0">
                                             <children>
                                                 <Button mnemonicParsing="false" styleClass="success" text="保存原始" />
-                                                <Button mnemonicParsing="false" text="保存过滤" />
+                                                <Button mnemonicParsing="false" styleClass="success" text="保存过滤" />
                                                 <Button mnemonicParsing="false" text="恢复滚动" />
-                                                <Button mnemonicParsing="false" text="清空数据" />
+                                                <Button fx:id="btnClearRecvData" mnemonicParsing="false" text="清空数据" />
                                             </children>
                                             <padding>
                                                 <Insets left="10.0" right="10.0" />

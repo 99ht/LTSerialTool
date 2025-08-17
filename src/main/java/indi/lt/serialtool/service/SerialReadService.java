@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +19,7 @@ public class SerialReadService extends Service<Void> {
     private final Logger LOG = LogManager.getLogger(SerialReadService.class);
 
     private final SerialPort comPort;
+
     private final TextArea targetTextArea;
 
     private final CheckBox cbTimeDisplay;
