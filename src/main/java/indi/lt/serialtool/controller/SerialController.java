@@ -5,10 +5,7 @@ import indi.lt.serialtool.service.SerialReadService;
 import indi.lt.serialtool.ui.TaskHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +36,9 @@ public class SerialController implements Initializable {
 
     @FXML
     private Button btnOpenSerial;
+
+    @FXML
+    private CheckBox cbTimeDisplay;
 
     private SerialReadService serialReadService;
 
@@ -77,7 +77,7 @@ public class SerialController implements Initializable {
         }
 
         // 创建并启动Service
-        this.serialReadService = new SerialReadService(comPort, textAreaOrigin, 100);
+        this.serialReadService = new SerialReadService(comPort, textAreaOrigin, cbTimeDisplay);
         serialReadService.start();
         // 后面如果要停止：
         // service.cancel();

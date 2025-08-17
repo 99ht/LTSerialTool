@@ -79,7 +79,7 @@
                                                 <Label text="过滤关键字:" />
                                                 <TextField />
                                                 <CheckBox mnemonicParsing="false" text="HEX显示" />
-                                                <CheckBox mnemonicParsing="false" text="时间戳显示" />
+                                                <CheckBox fx:id="cbTimeDisplay" mnemonicParsing="false" text="时间戳显示" />
                                                 <CheckBox mnemonicParsing="false" prefHeight="17.0" prefWidth="100.0" text="高亮关键字" />
                                             </children>
                                  <padding>
@@ -136,7 +136,7 @@
                                                 <Label text="过滤关键字:" />
                                                 <TextField />
                                                 <CheckBox mnemonicParsing="false" text="HEX显示" />
-                                                <CheckBox mnemonicParsing="false" text="时间戳显示" />
+                                                <CheckBox fx:id="cbTimeDisplay2" mnemonicParsing="false" text="时间戳显示" />
                                                 <CheckBox mnemonicParsing="false" prefHeight="17.0" prefWidth="100.0" text="高亮关键字" />
                                             </children>
                                  <padding>

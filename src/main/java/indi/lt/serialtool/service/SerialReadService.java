@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextArea;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,12 +19,14 @@ public class SerialReadService extends Service<Void> {
 
     private final SerialPort comPort;
     private final TextArea targetTextArea;
-    private final int maxLines;
 
-    public SerialReadService(SerialPort comPort, TextArea targetTextArea, int maxLines) {
+    private final CheckBox cbTimeDisplay;
+    private static final int MAXLINES = 5000;
+
+    public SerialReadService(SerialPort comPort, TextArea targetTextArea, CheckBox cbTimeDisplay) {
         this.comPort = comPort;
         this.targetTextArea = targetTextArea;
-        this.maxLines = maxLines;
+        this.cbTimeDisplay = cbTimeDisplay;
     }
 
     @Override
@@ -47,15 +50,20 @@ public class SerialReadService extends Service<Void> {
                             sb.delete(0, newlineIndex + 1);
 
                             Platform.runLater(() -> {
-                                String timestamp = java.time.LocalDateTime.now()
-                                        .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
-                                String finalLine = "[" + timestamp + "] " + line;
+                                String finalLine = "";
+                                if (cbTimeDisplay.isSelected()) {
+                                    String timestamp = java.time.LocalDateTime.now()
+                                            .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
+                                    finalLine = "[" + timestamp + "] " + line;
+                                } else {
+                                    finalLine = line;
+                                }
                                 targetTextArea.appendText(finalLine);
 
                                 // 限制最大行数
                                 ObservableList<CharSequence> paragraphs = targetTextArea.getParagraphs();
-                                if (paragraphs.size() > maxLines) {
-                                    int linesToRemove = paragraphs.size() - maxLines;
+                                if (paragraphs.size() > MAXLINES) {
+                                    int linesToRemove = paragraphs.size() - MAXLINES;
                                     String fullText = targetTextArea.getText();
                                     int cutIndex = 0;
                                     int linesRemoved = 0;
