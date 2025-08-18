@@ -1,3 +1,7 @@
+.root {
+    -fx-font-size: 12px;
+}
+
 .dialog-pane .content {
     -fx-text-fill: #111;
 }
@@ -76,3 +80,15 @@
 .search-button-selected {
     -fx-background-color: -color-button-border-focused, -color-button-bg-hover;
 }
+
+/* 串口开关按钮 beg*/
+.serial-toggle-button {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-button-fg-selected;
+}
+
+.serial-toggle-button:selected {
+    -fx-background-color: -color-danger-emphasis;
+    -fx-text-fill: -color-button-fg-selected;
+}
+/* 串口开关按钮 end*/

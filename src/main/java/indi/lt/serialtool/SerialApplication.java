@@ -7,12 +7,20 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
 public class SerialApplication extends Application {
+
+    private final Logger LOG = LogManager.getLogger(SerialController.class);
+
     @Override
     public void start(Stage stage) throws IOException {
+        // 全局UI线程异常捕获
+        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> LOG.error("未知异常", e));
+
         // 注意资源路径，通常加前导斜杠更稳
         FXMLLoader fxmlLoader = new FXMLLoader(SerialApplication.class.getResource("/fxml/hello-view.fxml"));
         // 先加载 -> 创建场景图和 Controller 并完成 @FXML 注入

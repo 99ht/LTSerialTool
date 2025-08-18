@@ -1,13 +1,15 @@
 package indi.lt.serialtool.controller;
 
 import com.fazecast.jSerialComm.SerialPort;
+import indi.lt.serialtool.component.SerialToggleButton;
 import indi.lt.serialtool.service.SerialReadService;
 import indi.lt.serialtool.ui.TaskHandler;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class SerialController implements Initializable {
 
@@ -40,7 +40,7 @@ public class SerialController implements Initializable {
     private TextArea textAreaOrigin;
 
     @FXML
-    private Button btnOpenSerial;
+    private SerialToggleButton btnOpenSerial;
 
     @FXML
     private CheckBox cbTimeDisplay;
@@ -77,7 +77,7 @@ public class SerialController implements Initializable {
             LOG.info("未检测到串口设备");
             return;
         }
-//        Integer bautrate = cbBautRateList.getSelectionModel().getSelectedItem();
+        //        Integer bautrate = cbBautRateList.getSelectionModel().getSelectedItem();
         Integer bautrate = Integer.parseInt(String.valueOf(cbBautRateList.getSelectionModel().getSelectedItem()));
         if (bautrate == null) {
             LOG.info("波特率无效");
@@ -107,13 +107,10 @@ public class SerialController implements Initializable {
         // 1. 展开下拉框时刷新列表（保留，但刷新逻辑已优化）
         cbSerialList.setOnShowing(event -> refreshSerialList());
 
-        cbSerialList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue, String oldVal, String newVal) {
-                if (null != newVal && null != oldVal) {
-                    LOG.debug(oldVal + "->" + newVal);
-                    onSerialPortClicked();
-                }
+        cbSerialList.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
+            if (null != newVal && null != oldVal) {
+                LOG.debug(oldVal + "->" + newVal);
+                onSerialPortClicked();
             }
         });
 
@@ -134,13 +131,11 @@ public class SerialController implements Initializable {
     }
 
     private void initOpenSerialButtonAction() {
-        btnOpenSerial.setOnAction(event -> {
-            if ("打开".equals(btnOpenSerial.getText())) {
-                btnOpenSerial.setText("关闭");
+        btnOpenSerial.selectedProperty().addListener((observableValue, oldVal, newVal) -> {
+            if (newVal) {
                 openSelectSerial();
             } else {
                 closeSelectSerial();
-                btnOpenSerial.setText("打开");
             }
         });
     }
@@ -167,7 +162,7 @@ public class SerialController implements Initializable {
     }
 
     private void initBautRateList() {
-        List<Integer> baudRates = new ArrayList<>(Arrays.asList( //list可以增删改
+        List<Integer> baudRates = new ArrayList<>(Arrays.asList( // list可以增删改
                 1200, 2400, 4800, 9600, 38400, 57600, 115200, 230400, 1500000, 2000000, 3000000));
 
         // 清空旧的 items 并添加
