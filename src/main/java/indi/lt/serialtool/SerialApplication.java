@@ -42,8 +42,4 @@ public class SerialApplication extends Application {
 
         appStage.show();
     }
-
-    public static void main(String[] args) {
-        launch();
-    }
 }
