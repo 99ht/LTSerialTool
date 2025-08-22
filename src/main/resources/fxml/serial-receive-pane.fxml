@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import indi.lt.serialtool.component.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<fx:root spacing="10.0" type="VBox" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialReceiveCtrl">
+    <children>
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <children>
+                <Label fx:id="lbSerialName" minWidth="40.0" text="串口1:" />
+                <ComboBox fx:id="cbSerialList" prefWidth="200.0" />
+                <SerialToggleButton fx:id="btnOpenSerial" minWidth="60.0" mnemonicParsing="false" text="打开" />
+                <Label maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                <Label text="波特率:" />
+                <ComboBox fx:id="cbBautRateList" editable="true" prefWidth="150.0" />
+                <Button mnemonicParsing="false" text="更多设置" />
+            </children>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <children>
+                <Label text="过滤关键字:" />
+                <TextField promptText="关键字以“|”隔开" />
+                <CheckBox mnemonicParsing="false" text="HEX显示" />
+                <CheckBox fx:id="cbTimeDisplay" mnemonicParsing="false" text="时间戳显示" />
+                <CheckBox mnemonicParsing="false" prefHeight="17.0" prefWidth="100.0" text="高亮关键字" />
+            </children>
+        </HBox>
+        <HBox spacing="10.0">
+            <children>
+                <Button mnemonicParsing="false" styleClass="success" text="保存原始" />
+                <Button mnemonicParsing="false" styleClass="success" text="保存过滤" />
+                <Button mnemonicParsing="false" text="恢复滚动" />
+                <Button fx:id="btnClearRecvData" mnemonicParsing="false" text="清空数据" />
+            </children>
+        </HBox>
+        <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
+            <items>
+                <TextArea fx:id="textAreaOrigin" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="原始数据..." />
+                <TextArea editable="false" prefHeight="200.0" prefWidth="200.0" promptText="过滤数据..." />
+            </items>
+        </SplitPane>
+        <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+            <children>
+                <Label maxHeight="1.7976931348623157E308" text="就绪" />
+                <Label maxHeight="1.7976931348623157E308" prefWidth="39.0" text="接收量:" />
+                <Label maxHeight="1.7976931348623157E308" text="0B" />
+            </children>
+        </HBox>
+    </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</fx:root>

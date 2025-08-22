@@ -22,7 +22,7 @@ public class SerialApplication extends Application {
         Thread.currentThread().setUncaughtExceptionHandler((t, e) -> LOG.error("未知异常", e));
 
         // 注意资源路径，通常加前导斜杠更稳
-        FXMLLoader fxmlLoader = new FXMLLoader(SerialApplication.class.getResource("/fxml/hello-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(SerialApplication.class.getResource("/fxml/main-view.fxml"));
         // 先加载 -> 创建场景图和 Controller 并完成 @FXML 注入
         Parent root = fxmlLoader.load();
         // 再拿 Controller
