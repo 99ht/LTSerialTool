@@ -2,6 +2,7 @@ package indi.lt.serialtool.view;
 
 import indi.lt.serialtool.controller.SerialReceiveCtrl;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
@@ -11,7 +12,7 @@ import java.io.IOException;
  * @date 2025/8/22
  * @since 1.0.0
  */
-public class SerialReceivePane extends VBox {
+public class SerialReceivePane extends StackPane {
 
     private SerialReceiveCtrl controller;
 
