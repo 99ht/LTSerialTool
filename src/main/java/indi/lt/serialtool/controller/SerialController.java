@@ -1,5 +1,6 @@
 package indi.lt.serialtool.controller;
 
+import atlantafx.base.util.BBCodeParser;
 import indi.lt.serialtool.view.SerialReceivePane;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

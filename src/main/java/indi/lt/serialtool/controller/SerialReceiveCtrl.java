@@ -1,6 +1,8 @@
 package indi.lt.serialtool.controller;
 
 import com.fazecast.jSerialComm.SerialPort;
+import indi.lt.serialtool.component.InlineCssRegexHighlighter;
+import indi.lt.serialtool.component.PromptInlineCssTextArea;
 import indi.lt.serialtool.component.SerialToggleButton;
 import indi.lt.serialtool.service.SerialReadService;
 import indi.lt.serialtool.ui.TaskHandler;
@@ -11,9 +13,11 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,7 +49,7 @@ public class SerialReceiveCtrl implements Initializable {
     private ComboBox<Integer> cbBautRateList;
 
     @FXML
-    private TextArea textAreaOrigin;
+    private PromptInlineCssTextArea textAreaOrigin;
 
     @FXML
     private SerialToggleButton btnOpenSerial;
@@ -53,9 +57,14 @@ public class SerialReceiveCtrl implements Initializable {
     @FXML
     private CheckBox cbTimeDisplay;
 
+    @FXML
+    private TextField tfKeyWord;
+
     private SerialReadService serialReadService;
 
     private SerialPort comPort;
+
+    private InlineCssRegexHighlighter highlighter;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -100,8 +109,12 @@ public class SerialReceiveCtrl implements Initializable {
             return;
         }
 
+        highlighter = new InlineCssRegexHighlighter(textAreaOrigin);
+        highlighter.patternTextProperty().bind(tfKeyWord.textProperty());
         // 创建并启动Service
-        this.serialReadService = new SerialReadService(comPort_temp, textAreaOrigin, cbTimeDisplay);
+        this.serialReadService = new SerialReadService(comPort_temp, textAreaOrigin,
+                cbTimeDisplay,
+                () -> highlighter.schedule(), 500);
         serialReadService.start();
     }
 
