@@ -129,4 +129,9 @@ public class PromptInlineCssTextArea extends StackPane {
     public ObservableValue<String> textProperty() {
         return area.textProperty();
     }
+
+    public void moveToEnd() {
+        area.moveTo(area.getLength());
+        area.requestFollowCaret();
+    }
 }
