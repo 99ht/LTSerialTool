@@ -79,7 +79,8 @@ tasks.register('packageMyApp', PackageTask) {
     // mandatory
     mainClass = application.mainClass.get()
     // optional
-    modules = ["java.base", "java.management", "java.net.http", "java.scripting", "java.sql", "java.naming",
+    modules = ["java.base", "java.management", "java.net.http", "java.scripting", "java.sql",
+               "java.naming",
                "jdk.jsobject", "jdk.unsupported", "jdk.unsupported.desktop", "jdk.xml.dom",
                // 这个模块没有的话，访问不了https
                "jdk.crypto.ec"

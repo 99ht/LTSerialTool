@@ -9,6 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
+import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.InlineCssTextArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.reactfx.collection.LiveList;
@@ -16,6 +17,8 @@ import org.reactfx.collection.LiveList;
 public class PromptInlineCssTextArea extends StackPane {
 
     private final InlineCssTextArea area = new InlineCssTextArea();
+    private final VirtualizedScrollPane<InlineCssTextArea> vsPane;
+
 
     // 在自定义控件上定义一个 JavaFX 属性，供 FXML 使用
     private final StringProperty promptText = new SimpleStringProperty(this, "promptText", "");
@@ -23,7 +26,10 @@ public class PromptInlineCssTextArea extends StackPane {
     public PromptInlineCssTextArea() {   // FXML 需要无参构造
         setPadding(new Insets(2, 2, 2, 2));
         Label promptLabel = new Label();
-        getChildren().addAll(area, promptLabel);
+
+        vsPane = new VirtualizedScrollPane<>(area);
+
+        getChildren().addAll(vsPane, promptLabel);
 
         // 提示文字样式/布局
         promptLabel.getStyleClass().add("prompt-text");
