@@ -93,18 +93,17 @@ public class SerialReceiveCtrl implements Initializable {
         //        Integer bautrate = cbBautRateList.getSelectionModel().getSelectedItem();
         int bautrate = Integer.parseInt(String.valueOf(f_cbBautRateList.getSelectionModel().getSelectedItem()));
         LOG.info("此时的波特率:" + bautrate);
-        SerialPort comPort_temp;
 
-        comPort_temp = ports[selectedIndex];
+        comPort = ports[selectedIndex];
         try {
-            comPort_temp.setComPortParameters(bautrate, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-            comPort_temp.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
+            comPort.setComPortParameters(bautrate, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+            comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
         } catch (Exception e) {
             LOG.error("设置波特率时发生异常", e);
             return;
         }
 
-        if (!comPort_temp.openPort()) {
+        if (!comPort.openPort()) {
             LOG.error("串口打开失败");
             return;
         }
@@ -112,7 +111,7 @@ public class SerialReceiveCtrl implements Initializable {
         highlighter = new InlineCssRegexHighlighter(textAreaOrigin);
         highlighter.patternTextProperty().bind(tfKeyWord.textProperty());
         // 创建并启动Service
-        this.serialReadService = new SerialReadService(comPort_temp, textAreaOrigin,
+        this.serialReadService = new SerialReadService(comPort, textAreaOrigin,
                 cbTimeDisplay,
                 () -> highlighter.schedule(), 500);
         serialReadService.start();
