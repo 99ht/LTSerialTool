@@ -120,7 +120,6 @@ public class SerialReadService extends Service<Void> {
                                 targetTextArea.appendText(batch);
                                 trimByMaxLines(targetTextArea, maxLines);
                                 if (highlighter != null) highlighter.schedule();
-                                targetTextArea.moveToEnd();
                             });
                         }
                     }
@@ -132,7 +131,6 @@ public class SerialReadService extends Service<Void> {
                             targetTextArea.appendText(leftover);
                             trimByMaxLines(targetTextArea, maxLines);
                             if (highlighter != null) highlighter.schedule();
-                            targetTextArea.moveToEnd();
                         });
                     }
 

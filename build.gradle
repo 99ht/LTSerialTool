@@ -46,8 +46,15 @@ application {
 
 javafx {
     version = "${versions.jfx}"
-    modules = ['javafx.controls', 'javafx.fxml']
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics']
 }
+
+def os = org.gradle.internal.os.OperatingSystem.current()
+def arch = System.getProperty("os.arch")
+def platform =
+        os.isWindows() ? "win" :
+                os.isMacOsX() ? (arch.contains("aarch64") || arch.contains("arm64") ? "mac-aarch64" : "mac") :
+                        /* linux */ (arch.contains("aarch64") || arch.contains("arm64") ? "linux-aarch64" : "linux")
 
 dependencies {
     implementation('org.kordamp.ikonli:ikonli-javafx:12.3.1')

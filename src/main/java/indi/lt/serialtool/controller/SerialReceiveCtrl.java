@@ -12,12 +12,10 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -77,6 +75,20 @@ public class SerialReceiveCtrl implements Initializable {
         initOpenSerialButtonAction();
         initBautRateComboBoxAction();
     }
+
+    /**
+     * 恢复自动滚动
+     */
+    @FXML
+    private void restoreScrolling() {
+        textAreaOrigin.setAutoScroll(true);
+    }
+
+    @FXML
+    private void clearLogs() {
+        textAreaOrigin.getArea().clear();
+    }
+
 
     private void openSelectSerial(ComboBox<String> f_cbSerialList, ComboBox<Integer> f_cbBautRateList) {
         int selectedIndex = f_cbSerialList.getSelectionModel().getSelectedIndex();
