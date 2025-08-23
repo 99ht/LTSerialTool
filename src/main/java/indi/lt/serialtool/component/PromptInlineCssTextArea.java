@@ -13,6 +13,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.InlineCssTextArea;
@@ -70,23 +72,29 @@ public class PromptInlineCssTextArea extends StackPane {
         vsPane.applyCss();
         vsPane.layout();
 
+        // 监听滚轮/触控板滚动：只要用户滚动，就停用自动滚动（粘性关闭）
+        // 放在这里安装一次即可（本方法只会成功执行一次）
+        area.addEventFilter(ScrollEvent.SCROLL, e -> setAutoScroll(false));
+        vsPane.addEventFilter(ScrollEvent.SCROLL, e -> setAutoScroll(false));
+
         Set<Node> bars = vsPane.lookupAll(".scroll-bar");
         for (Node n : bars) {
             if (n instanceof ScrollBar sb && sb.getOrientation() == Orientation.VERTICAL) {
                 verticalBar = sb;
 
-                // 用户滚动时：离开底部 -> 关自动滚动；到达底部 -> 开启
-                verticalBar.valueProperty().addListener((o, ov, nv) -> autoScroll.set(isAtBottom(verticalBar)));
-                // 范围变化时也刷新一次（避免精度/布局抖动）
-                verticalBar.maxProperty().addListener((o, ov, nv) -> autoScroll.set(isAtBottom(verticalBar)));
-                verticalBar.visibleAmountProperty().addListener((o, ov, nv) -> autoScroll.set(isAtBottom(verticalBar)));
+                // 用户用鼠标点击/拖动滚动条（含拖拽滑块、点击轨道）时，停用自动滚动
+                verticalBar.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> setAutoScroll(false));
+                verticalBar.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> setAutoScroll(false));
+                verticalBar.addEventFilter(ScrollEvent.SCROLL, e -> setAutoScroll(false)); // 在滚动条上滚轮
 
-                // 初始化一次状态
-                autoScroll.set(isAtBottom(verticalBar));
+                // 可选：键盘操作滚动条也视为手动干预
+                // verticalBar.addEventFilter(KeyEvent.ANY, e -> setAutoScroll(false));
+
                 break;
             }
         }
     }
+
 
     private static boolean isAtBottom(ScrollBar sb) {
         return sb.getValue() >= sb.getMax() - EPS;
