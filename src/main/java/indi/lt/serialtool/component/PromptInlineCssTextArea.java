@@ -6,7 +6,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -51,21 +50,17 @@ public class PromptInlineCssTextArea extends StackPane {
         promptLabel.textProperty().bind(promptTextProperty());
         promptLabel.visibleProperty().bind(
                 Bindings.createBooleanBinding(
-                        () -> false,
+                        () -> area.getText().isEmpty(),
                         area.textProperty(), area.focusedProperty()
                 )
         );
 
         area.setWrapText(true);
-        area.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                if (null == newValue || newValue.isEmpty()) {
-                    area.setParagraphGraphicFactory(null);
-                } else {
-                    area.setParagraphGraphicFactory(LineNumberFactory.get(area));
-                }
-
+        area.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (null == newValue || newValue.isEmpty()) {
+                area.setParagraphGraphicFactory(null);
+            } else {
+                area.setParagraphGraphicFactory(LineNumberFactory.get(area));
             }
         });
 

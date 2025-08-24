@@ -8,7 +8,6 @@ import javafx.concurrent.Task;
 import javafx.scene.control.CheckBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.fxmisc.richtext.InlineCssTextArea;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,12 +40,7 @@ public class SerialReadService extends Service<Void> {
         void schedule();
     }
 
-    private final HighlighterScheduler highlighter; // 可为 null
-
-    /**
-     * 最大保留的段落（行）数
-     */
-    private final int maxLines;
+    private final HighlighterScheduler highlighterScheduler; // 可为 null
 
     /**
      * 一次读取的缓冲大小（字节）
@@ -58,19 +52,17 @@ public class SerialReadService extends Service<Void> {
     public SerialReadService(SerialPort comPort,
                              PromptInlineCssTextArea targetTextArea,
                              CheckBox cbTimeDisplay) {
-        this(comPort, targetTextArea, cbTimeDisplay, null, 5000);
+        this(comPort, targetTextArea, cbTimeDisplay, null);
     }
 
     public SerialReadService(SerialPort comPort,
                              PromptInlineCssTextArea targetTextArea,
                              CheckBox cbTimeDisplay,
-                             HighlighterScheduler highlighter,
-                             int maxLines) {
+                             HighlighterScheduler highlighter) {
         this.comPort = comPort;
         this.targetTextArea = targetTextArea;
         this.cbTimeDisplay = cbTimeDisplay;
-        this.highlighter = highlighter;
-        this.maxLines = Math.max(1, maxLines);
+        this.highlighterScheduler = highlighter;
     }
 
     @Override
@@ -96,9 +88,7 @@ public class SerialReadService extends Service<Void> {
                     while (!isCancelled()) {
                         int n = in.read(rawBuf);
                         if (n < 0) break;       // EOF
-                        if (n == 0) continue;   // 无数据
-
-                        // 解码
+                        if (n == 0) continue;   // 无数据                        // 解码
                         byteBuf.clear();
                         byteBuf.put(rawBuf, 0, n).flip();
                         while (byteBuf.hasRemaining()) {
@@ -118,7 +108,7 @@ public class SerialReadService extends Service<Void> {
                             uiBatch.setLength(0);
                             Platform.runLater(() -> {
                                 targetTextArea.appendText(batch);
-                                if (highlighter != null) highlighter.schedule();
+                                if (highlighterScheduler != null) highlighterScheduler.schedule();
                             });
                         }
                     }
@@ -128,7 +118,7 @@ public class SerialReadService extends Service<Void> {
                         String leftover = formatLine(lineBuf.toString(), cbTimeDisplay.isSelected());
                         Platform.runLater(() -> {
                             targetTextArea.appendText(leftover);
-                            if (highlighter != null) highlighter.schedule();
+                            if (highlighterScheduler != null) highlighterScheduler.schedule();
                         });
                     }
 

@@ -125,7 +125,7 @@ public class SerialReceiveCtrl implements Initializable {
         // 创建并启动Service
         this.serialReadService = new SerialReadService(comPort, textAreaOrigin,
                 cbTimeDisplay,
-                () -> highlighter.schedule(), 50);
+                () -> highlighter.schedule());
         serialReadService.start();
     }
 

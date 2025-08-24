@@ -3,6 +3,7 @@ package indi.lt.serialtool;
 import github.nonoas.jfx.flat.ui.theme.LightTheme;
 import indi.lt.serialtool.controller.SerialController;
 import indi.lt.serialtool.view.BaseStage;
+import indi.lt.serialtool.view.MainStage;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -30,11 +31,7 @@ public class SerialApplication extends Application {
 
         setUserAgentStylesheet(new LightTheme().getUserAgentStylesheet());
 
-        BaseStage appStage = new BaseStage();
-        appStage.getStage().setWidth(700);
-        appStage.getStage().setHeight(600);
-        appStage.setMinWidth(700);
-        appStage.setMinHeight(600);
+        MainStage appStage = new MainStage();
         appStage.setTitle("LTSerialTool-v2.16.0");
         appStage.setContentView(root);
         // 现在 controller 已经不是 null 了，且其 @FXML 成员已注入

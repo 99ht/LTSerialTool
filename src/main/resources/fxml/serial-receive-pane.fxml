@@ -5,7 +5,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <fx:root minWidth="0.0" type="StackPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialReceiveCtrl">
    <children>
       <VBox spacing="10.0">
@@ -16,9 +15,9 @@
                       <ComboBox fx:id="cbSerialList" prefWidth="200.0" />
                       <SerialToggleButton fx:id="btnOpenSerial" minWidth="60.0" mnemonicParsing="false" text="打开" />
                       <Label maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
-                      <Label text="波特率:" />
+                      <Label minWidth="42.0" text="波特率:" />
                       <ComboBox fx:id="cbBautRateList" editable="true" prefWidth="150.0" />
-                      <Button mnemonicParsing="false" text="更多设置" />
+                      <Button minWidth="80.0" mnemonicParsing="false" text="更多设置" />
                   </children>
               </HBox>
               <HBox alignment="CENTER_LEFT" spacing="10.0">
@@ -40,8 +39,8 @@
               </HBox>
               <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
                   <items>
-                      <PromptInlineCssTextArea fx:id="textAreaOrigin" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="提示文本" />
-                      <PromptInlineCssTextArea editable="false" prefHeight="200.0" prefWidth="200.0" promptText="提示文本" />
+                      <PromptInlineCssTextArea fx:id="textAreaOrigin" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="源数据" />
+                      <PromptInlineCssTextArea editable="false" prefHeight="200.0" prefWidth="200.0" promptText="过滤后数据" />
                   </items>
               </SplitPane>
               <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">

@@ -92,3 +92,10 @@
     -fx-text-fill: -color-button-fg-selected;
 }
 /* 串口开关按钮 end*/
+
+
+.prompt-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #999999;       /* 灰色文字 */
+    -fx-padding: 2 4 2 4;         /* 内边距：上右下左 */
+}
