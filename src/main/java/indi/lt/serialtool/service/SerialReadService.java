@@ -118,7 +118,6 @@ public class SerialReadService extends Service<Void> {
                             uiBatch.setLength(0);
                             Platform.runLater(() -> {
                                 targetTextArea.appendText(batch);
-                                trimByMaxLines(targetTextArea, maxLines);
                                 if (highlighter != null) highlighter.schedule();
                             });
                         }
@@ -129,7 +128,6 @@ public class SerialReadService extends Service<Void> {
                         String leftover = formatLine(lineBuf.toString(), cbTimeDisplay.isSelected());
                         Platform.runLater(() -> {
                             targetTextArea.appendText(leftover);
-                            trimByMaxLines(targetTextArea, maxLines);
                             if (highlighter != null) highlighter.schedule();
                         });
                     }
@@ -184,18 +182,5 @@ public class SerialReadService extends Service<Void> {
         } else {
             return raw + "\n";
         }
-    }
-
-    /**
-     * 使用 RichTextFX 段落 API 按“最大行数”裁剪头部文本。
-     */
-    private static void trimByMaxLines(PromptInlineCssTextArea area, int maxLines) {
-        int paraCount = area.getParagraphs().size();
-        if (paraCount <= maxLines) return;
-
-        int remove = paraCount - maxLines;
-        // 计算“第 remove 段开头”的全局偏移
-        int cutOffset = area.getAbsolutePosition(remove, 0);
-        area.replaceText(0, cutOffset, "");
     }
 }

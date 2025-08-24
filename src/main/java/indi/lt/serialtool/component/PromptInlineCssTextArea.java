@@ -6,6 +6,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -18,6 +19,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.InlineCssTextArea;
+import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.reactfx.collection.LiveList;
 
@@ -34,6 +36,7 @@ public class PromptInlineCssTextArea extends StackPane {
     // 缓存竖直滚动条
     private ScrollBar verticalBar;
     private static final double EPS = 1e-3;
+    private final int maxLines = 50;
 
     public PromptInlineCssTextArea() {
         setPadding(new Insets(2, 2, 2, 2));
@@ -48,12 +51,24 @@ public class PromptInlineCssTextArea extends StackPane {
         promptLabel.textProperty().bind(promptTextProperty());
         promptLabel.visibleProperty().bind(
                 Bindings.createBooleanBinding(
-                        () -> area.getText().isEmpty() && !area.isFocused(),
+                        () -> false,
                         area.textProperty(), area.focusedProperty()
                 )
         );
 
         area.setWrapText(true);
+        area.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (null == newValue || newValue.isEmpty()) {
+                    area.setParagraphGraphicFactory(null);
+                } else {
+                    area.setParagraphGraphicFactory(LineNumberFactory.get(area));
+                }
+
+            }
+        });
+
 
         // —— 等待进入 Scene 后再尝试安装滚动条监听（无 skinProperty 可用）
         sceneProperty().addListener((obs, oldScene, newScene) -> {
@@ -101,54 +116,113 @@ public class PromptInlineCssTextArea extends StackPane {
     }
 
     // ---------- 对外暴露/转发属性 ----------
-    public final StringProperty promptTextProperty() { return promptText; }
-    public final String getPromptText() { return promptText.get(); }
-    public final void setPromptText(String value) { promptText.set(value); }
+    public final StringProperty promptTextProperty() {
+        return promptText;
+    }
 
-    public final BooleanProperty editableProperty() { return area.editableProperty(); }
-    public final boolean isEditable() { return area.isEditable(); }
-    public final void setEditable(boolean value) { area.setEditable(value); }
+    public final String getPromptText() {
+        return promptText.get();
+    }
 
-    public final BooleanProperty wrapTextProperty() { return area.wrapTextProperty(); }
-    public final boolean isWrapText() { return area.isWrapText(); }
-    public final void setWrapText(boolean value) { area.setWrapText(value); }
+    public final void setPromptText(String value) {
+        promptText.set(value);
+    }
 
-    public final String getText() { return area.getText(); }
+    public final BooleanProperty editableProperty() {
+        return area.editableProperty();
+    }
+
+    public final boolean isEditable() {
+        return area.isEditable();
+    }
+
+    public final void setEditable(boolean value) {
+        area.setEditable(value);
+    }
+
+    public final BooleanProperty wrapTextProperty() {
+        return area.wrapTextProperty();
+    }
+
+    public final boolean isWrapText() {
+        return area.isWrapText();
+    }
+
+    public final void setWrapText(boolean value) {
+        area.setWrapText(value);
+    }
+
+    public final String getText() {
+        return area.getText();
+    }
+
     public final void setText(String value) {
         area.replaceText(value == null ? "" : value);
         if (verticalBar != null) autoScroll.set(isAtBottom(verticalBar));
     }
 
-    public InlineCssTextArea getArea() { return area; }
+    public InlineCssTextArea getArea() {
+        return area;
+    }
 
-    public void setStyleSpans(int i, StyleSpans<String> plain) { area.setStyleSpans(i, plain); }
+    public void setStyleSpans(int i, StyleSpans<String> plain) {
+        area.setStyleSpans(i, plain);
+    }
 
     public void appendText(String batch) {
         if (batch == null || batch.isEmpty()) return;
         Runnable r = () -> {
             area.appendText(batch);
+            trimByMaxLines(this, maxLines);
             if (autoScroll.get()) moveToEnd();
         };
-        if (Platform.isFxApplicationThread()) r.run(); else Platform.runLater(r);
+        if (Platform.isFxApplicationThread()) r.run();
+        else Platform.runLater(r);
+    }
+
+    /**
+     * 使用 RichTextFX 段落 API 按“最大行数”裁剪头部文本。
+     */
+    private static void trimByMaxLines(PromptInlineCssTextArea area, int maxLines) {
+        int paraCount = area.getParagraphs().size();
+        if (paraCount <= maxLines) return;
+
+        int remove = paraCount - maxLines;
+        // 计算“第 remove 段开头”的全局偏移
+        int cutOffset = area.getAbsolutePosition(remove, 0);
+        area.replaceText(0, cutOffset, "");
     }
 
     public void replaceText(int i, int cutOffset, String s) {
         area.replaceText(i, cutOffset, s);
-        if (verticalBar != null) autoScroll.set(isAtBottom(verticalBar));
     }
 
-    public int getAbsolutePosition(int remove, int i) { return area.getAbsolutePosition(remove, i); }
+    public int getAbsolutePosition(int remove, int i) {
+        return area.getAbsolutePosition(remove, i);
+    }
 
-    public LiveList<?> getParagraphs() { return area.getParagraphs(); }
+    public LiveList<?> getParagraphs() {
+        return area.getParagraphs();
+    }
 
-    public ObservableValue<String> textProperty() { return area.textProperty(); }
+    public ObservableValue<String> textProperty() {
+        return area.textProperty();
+    }
 
     public void moveToEnd() {
         area.moveTo(area.getLength());
         area.requestFollowCaret();
     }
 
-    public boolean isAutoScroll() { return autoScroll.get(); }
-    public SimpleBooleanProperty autoScrollProperty() { return autoScroll; }
-    public void setAutoScroll(boolean autoScroll) { this.autoScroll.set(autoScroll); }
+    public boolean isAutoScroll() {
+        return autoScroll.get();
+    }
+
+    public SimpleBooleanProperty autoScrollProperty() {
+        return autoScroll;
+    }
+
+    public void setAutoScroll(boolean autoScroll) {
+        this.autoScroll.set(autoScroll);
+    }
 }

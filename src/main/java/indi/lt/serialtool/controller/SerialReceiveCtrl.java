@@ -125,7 +125,7 @@ public class SerialReceiveCtrl implements Initializable {
         // 创建并启动Service
         this.serialReadService = new SerialReadService(comPort, textAreaOrigin,
                 cbTimeDisplay,
-                () -> highlighter.schedule(), 500);
+                () -> highlighter.schedule(), 50);
         serialReadService.start();
     }
 
@@ -183,7 +183,9 @@ public class SerialReceiveCtrl implements Initializable {
         if (null != comPort) {
             comPort.closePort();
         }
-        serialReadService.cancel();
+        if (null != serialReadService) {
+            serialReadService.cancel();
+        }
     }
 
     private void initBautRateList() {
