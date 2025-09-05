@@ -1,15 +1,14 @@
 package indi.lt.serialtool.view;
 
-import indi.lt.serialtool.controller.SerialReceiveCtrl;
+import indi.lt.serialtool.controller.SerialSendCtrl;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.SplitPane;
-import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 
 public class SerialSendPane extends SplitPane {
 
-    private SerialReceiveCtrl controller;
+    private SerialSendCtrl  controller;
 
     public SerialSendPane(String serialName){
         FXMLLoader fxmlLoader = new FXMLLoader(

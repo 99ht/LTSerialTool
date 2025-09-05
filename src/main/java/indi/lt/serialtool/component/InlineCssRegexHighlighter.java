@@ -12,11 +12,15 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class InlineCssRegexHighlighter {
+
+    private static final Logger LOG = LogManager.getLogger(InlineCssRegexHighlighter.class);
 
     private final PromptInlineCssTextArea area;
 
@@ -47,9 +51,11 @@ public class InlineCssRegexHighlighter {
             if (newText.length() > oldText.length()) {
                 int from = oldText.length();
                 int to = newText.length();
+                LOG.debug("渲染from: " + from + " to: " + to);
                 scheduleDelta(from, to);
             } else {
                 // 删除/清空 → 全量刷新
+                LOG.debug("全量渲染");
                 scheduleFull();
             }
         });

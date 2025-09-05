@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.StackPane?>
-<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialController">
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialController">
     <top>
         <MenuBar fx:id="menuBar" prefHeight="26.0" prefWidth="776.0">
             <menus>
@@ -28,9 +28,11 @@
                   <MenuItem mnemonicParsing="false" onAction="#changeToSendMode" text="发送模式" />
               </items>
             </Menu>
-                <Menu mnemonicParsing="false" text="关于">
+                <Menu mnemonicParsing="false" text="帮助">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Action 1" />
+                        <MenuItem mnemonicParsing="false" text="关于" />
+                        <MenuItem mnemonicParsing="false" text="投喂作者" />
+                        <MenuItem mnemonicParsing="false" text="前往官网" />
                     </items>
                 </Menu>
             </menus>
