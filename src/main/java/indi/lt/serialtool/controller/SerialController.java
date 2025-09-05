@@ -2,6 +2,7 @@ package indi.lt.serialtool.controller;
 
 import atlantafx.base.util.BBCodeParser;
 import indi.lt.serialtool.view.SerialReceivePane;
+import indi.lt.serialtool.view.SerialSendPane;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -23,8 +24,12 @@ public class SerialController implements Initializable {
     @FXML
     private BorderPane rootPane;
 
+    private SerialSendPane serialSendPane;
+
+    private final SplitPane spReceive = new SplitPane();
+
     @FXML
-    private SplitPane spMain;
+    private StackPane stpRootPane;
 
     @FXML
     private MenuBar menuBar;
@@ -37,16 +42,25 @@ public class SerialController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         SerialReceivePane serialReceivePane1 = new SerialReceivePane("串口1:");
         SerialReceivePane serialReceivePane2 = new SerialReceivePane("串口2:");
-        spMain.getItems().addAll(serialReceivePane1, serialReceivePane2);
+        spReceive.getItems().addAll(serialReceivePane1, serialReceivePane2);
+        stpRootPane.getChildren().add(spReceive);
     }
 
     @FXML
-    private void changeToReceiveMode(){
-        rootPane.setCenter(spMain);
+    private void changeToReceiveMode() {
+        spReceive.setVisible(true);
+        if (serialSendPane != null) {
+            serialSendPane.setVisible(false);
+        }
     }
 
     @FXML
-    private void changeToSendMode(){
-        rootPane.setCenter(new StackPane(new Button("我是你大爷的发送模式")));
+    private void changeToSendMode() {
+        if (serialSendPane == null) {
+            serialSendPane = new SerialSendPane("串口:");
+            stpRootPane.getChildren().add(serialSendPane);
+        }
+        serialSendPane.setVisible(true);
+        spReceive.setVisible(false);
     }
 }

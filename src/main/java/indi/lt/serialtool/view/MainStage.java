@@ -25,6 +25,5 @@ public class MainStage extends BaseStage {
         Button pinButton = UIFactory.createPinButton(stage);
         Tooltip.install(pinButton,new Tooltip("窗口置顶"));
         getSystemButtons().add(0, pinButton);
-        getSystemButtons().add(0, new Button("设置"));
     }
 }

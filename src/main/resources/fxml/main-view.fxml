@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialController">
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialController">
     <top>
         <MenuBar fx:id="menuBar" prefHeight="26.0" prefWidth="776.0">
             <menus>
@@ -37,14 +37,7 @@
         </MenuBar>
     </top>
     <center>
-        <StackPane BorderPane.alignment="CENTER">
-            <children>
-                <VBox prefHeight="200.0" prefWidth="100.0">
-                    <children>
-                        <SplitPane fx:id="spMain" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
-                    </children>
-                </VBox>
-            </children>
+        <StackPane fx:id="stpRootPane" BorderPane.alignment="CENTER">
         </StackPane>
     </center>
 </BorderPane>
