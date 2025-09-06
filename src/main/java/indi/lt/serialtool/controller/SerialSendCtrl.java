@@ -45,6 +45,12 @@ public class SerialSendCtrl implements Initializable {
             ToastQueue.show(AppState.getStage(), "指令不能为空", 500);
             return;
         }
-        table.getItems().add(new CommandTableView.CommandItem(tfRemark.getText(), tfCommand.getText()));
+        String commandType;
+        if (cbIsHex.isSelected()) {
+            commandType = "HEX";
+        } else {
+            commandType = "TXT";
+        }
+        table.getItems().add(new CommandTableView.CommandItem(tfRemark.getText(), tfCommand.getText(), commandType));
     }
 }

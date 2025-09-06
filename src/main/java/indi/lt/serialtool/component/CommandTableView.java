@@ -19,6 +19,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Nonoas
@@ -26,6 +28,9 @@ import javafx.scene.layout.HBox;
  * @since
  */
 public class CommandTableView extends TableView<CommandTableView.CommandItem> {
+
+    private final Logger LOG = LogManager.getLogger(CommandTableView.class);
+
 
     public CommandTableView() {
         super(FXCollections.observableArrayList());
@@ -56,7 +61,7 @@ public class CommandTableView extends TableView<CommandTableView.CommandItem> {
                 sendBtn.setOnAction(e -> {
                     CommandItem item = getItem();
                     if (item != null) {
-                        System.out.println("发送: " + item.getCommand());
+                        LOG.info("发送: " + item.getCommand());
                     }
                 });
 
@@ -134,9 +139,10 @@ public class CommandTableView extends TableView<CommandTableView.CommandItem> {
         private final IntegerProperty interval = new SimpleIntegerProperty(1000);
         private final BooleanProperty scheduled = new SimpleBooleanProperty(false);
 
-        public CommandItem(String remark, String command) {
+        public CommandItem(String remark, String command, String commandType) {
             this.remark.set(remark);
             this.command.set(command);
+            this.commandType.set(commandType);
         }
 
         public String getRemark() {
