@@ -1,38 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.input.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialController">
+<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialController">
     <top>
         <MenuBar fx:id="menuBar" prefHeight="26.0" prefWidth="776.0">
             <menus>
                 <Menu mnemonicParsing="false" text="文件">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="保存为压缩包" />
+                        <MenuItem mnemonicParsing="false" text="保存为压缩包">
+                            <accelerator>
+                                <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP"
+                                                    shortcut="UP"/>
+                            </accelerator>
+                        </MenuItem>
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="设置">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Delete" />
+                        <CheckMenuItem mnemonicParsing="false" text="自动保存"/>
+                        <MenuItem mnemonicParsing="false" text="设置自动保存超时时间"/>
+                        <MenuItem mnemonicParsing="false" text="设置自动保存文件大小"/>
+                        <CheckMenuItem mnemonicParsing="false" text="提示缓冲区达到90%容量"/>
+                        <MenuItem mnemonicParsing="false" text="设置显示缓冲区容量"/>
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="主题">
+                    <items>
+                        <RadioMenuItem fx:id="lightTheme" text="亮色"/>
+                        <RadioMenuItem fx:id="darkTheme" text="暗色"/>
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="工具">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="About" />
+                        <MenuItem mnemonicParsing="false" text="ASCII码表"/>
                     </items>
                 </Menu>
-            <Menu mnemonicParsing="false" text="模式">
-              <items>
-                <MenuItem mnemonicParsing="false" onAction="#changeToReceiveMode" text="接收模式" />
-                  <MenuItem mnemonicParsing="false" onAction="#changeToSendMode" text="发送模式" />
-              </items>
-            </Menu>
+                <Menu mnemonicParsing="false" text="模式">
+                    <items>
+                        <MenuItem mnemonicParsing="false" onAction="#changeToReceiveMode" text="接收模式">
+                            <accelerator>
+                                <KeyCodeCombination alt="UP" code="DIGIT1" control="DOWN" meta="UP" shift="UP"
+                                                    shortcut="UP"/>
+                            </accelerator>
+                        </MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#changeToSendMode" text="发送模式">
+                            <accelerator>
+                                <KeyCodeCombination alt="UP" code="DIGIT2" control="DOWN" meta="UP" shift="UP"
+                                                    shortcut="UP"/>
+                            </accelerator>
+                        </MenuItem>
+                    </items>
+                </Menu>
                 <Menu mnemonicParsing="false" text="帮助">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="关于" />
-                        <MenuItem mnemonicParsing="false" text="投喂作者" />
-                        <MenuItem mnemonicParsing="false" text="前往官网" />
+                        <MenuItem mnemonicParsing="false" text="关于"/>
+                        <MenuItem mnemonicParsing="false" text="投喂作者"/>
+                        <MenuItem mnemonicParsing="false" text="前往官网" onAction="#goToWebsite"/>
                     </items>
                 </Menu>
             </menus>

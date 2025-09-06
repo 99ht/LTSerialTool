@@ -1,11 +1,11 @@
 package indi.lt.serialtool.controller;
 
 import com.fazecast.jSerialComm.SerialPort;
+import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
 import indi.lt.serialtool.component.InlineCssRegexHighlighter;
 import indi.lt.serialtool.component.PromptInlineCssTextArea;
 import indi.lt.serialtool.component.SerialToggleButton;
 import indi.lt.serialtool.service.SerialReadService;
-import indi.lt.serialtool.ui.TaskHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;

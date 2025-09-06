@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<fx:root dividerPositions="0.5285043594902749" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="462.0" prefWidth="598.0" type="SplitPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialSendCtrl">
+<fx:root dividerPositions="0.6" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="462.0" prefWidth="598.0" type="SplitPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialSendCtrl">
   <items>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
          <children>
@@ -18,27 +18,27 @@
                      </children>
                   </HBox>
                   <TextArea prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
-                  <HBox prefHeight="100.0" prefWidth="200.0">
+                  <HBox prefHeight="160.0" prefWidth="200.0">
                      <children>
-                        <VBox prefHeight="200.0" prefWidth="200.0">
+                        <VBox prefHeight="300.0" prefWidth="260.0">
                            <children>
-                              <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
+                              <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="250.0" spacing="10.0" VBox.vgrow="ALWAYS">
                                  <children>
                                     <Label minWidth="50.0" text="串口：" />
-                                    <ComboBox prefWidth="150.0" />
+                                    <ComboBox maxWidth="1.7976931348623157E308" prefWidth="150.0" HBox.hgrow="ALWAYS" />
                                  </children>
                               </HBox>
-                              <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
+                              <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
                                  <children>
                                     <Label minWidth="50.0" text="波特率：" />
-                                    <ComboBox prefWidth="150.0" />
-                                    <Button mnemonicParsing="false" text="更多设置" />
+                                    <ComboBox prefWidth="150.0" HBox.hgrow="ALWAYS" />
+                                    <Button minWidth="80.0" mnemonicParsing="false" text="更多设置" />
                                  </children>
                               </HBox>
                               <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="打开串口" />
                            </children>
                         </VBox>
-                        <VBox prefHeight="200.0" prefWidth="100.0">
+                        <VBox prefHeight="150.0" prefWidth="100.0">
                            <children>
                               <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="HEX显示" VBox.vgrow="ALWAYS" />
                               <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="HEX发送" VBox.vgrow="ALWAYS" />
@@ -49,17 +49,20 @@
                               <Insets left="10.0" />
                            </padding>
                         </VBox>
-                        <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                        <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0" HBox.hgrow="ALWAYS">
                            <children>
                               <Label text="发送区：" />
                               <TextArea prefHeight="200.0" prefWidth="200.0" />
-                              <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                              <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
                                  <children>
                                     <Button mnemonicParsing="false" text="清空发送" />
                                     <Button mnemonicParsing="false" text="发送" />
                                  </children>
                               </HBox>
                            </children>
+                           <padding>
+                              <Insets top="10.0" />
+                           </padding>
                         </VBox>
                      </children>
                   </HBox>
@@ -105,8 +108,8 @@
                      <children>
                         <TextField promptText="输入备注" />
                         <TextField promptText="输入指令" />
-                        <CheckBox minWidth="60.0" mnemonicParsing="false" text="是否HEX" />
-                        <Button minWidth="60.0" mnemonicParsing="false" onAction="#addCommand" text="添加指令" />
+                        <CheckBox minWidth="80.0" mnemonicParsing="false" text="是否HEX" />
+                        <Button minWidth="80.0" mnemonicParsing="false" onAction="#addCommand" text="添加指令" />
                      </children>
                   </HBox>
                </children>

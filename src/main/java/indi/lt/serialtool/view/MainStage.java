@@ -17,7 +17,7 @@ public class MainStage extends BaseStage {
 
     public MainStage() {
         stage = getStage();
-        getStage().setWidth(700);
+        getStage().setWidth(1000);
         getStage().setHeight(600);
         setMinWidth(700);
         setMinHeight(600);
