@@ -91,27 +91,19 @@
                <children>
                   <HBox alignment="CENTER_LEFT">
                      <children>
-                        <Label text="自定义指令区：" />
+                        <Label maxWidth="1.7976931348623157E308" text="自定义指令区：" HBox.hgrow="ALWAYS" />
                         <Button mnemonicParsing="false" text="开启定时发送" />
                      </children>
                   </HBox>
-                  <HBox>
-                     <children>
-                        <Label text="备注" />
-                        <Label text="指令" />
-                        <Label text="操作区" />
-                        <Label text="定时发送" />
-                     </children>
-                  </HBox>
-                  <StackPane fx:id="spTableContainer" prefHeight="150.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                   <HBox alignment="CENTER_LEFT" spacing="10.0">
                      <children>
-                        <TextField promptText="输入备注" />
-                        <TextField promptText="输入指令" />
-                        <CheckBox minWidth="80.0" mnemonicParsing="false" text="是否HEX" />
+                        <TextField fx:id="tfRemark" promptText="输入备注" />
+                        <TextField fx:id="tfCommand" promptText="输入指令" />
+                        <CheckBox fx:id="cbIsHex" minWidth="80.0" mnemonicParsing="false" text="是否HEX" />
                         <Button minWidth="80.0" mnemonicParsing="false" onAction="#addCommand" text="添加指令" />
                      </children>
                   </HBox>
+                  <StackPane fx:id="spTableContainer" prefHeight="150.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                </children>
             </VBox>
          </children></AnchorPane>

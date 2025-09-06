@@ -1,5 +1,6 @@
 package indi.lt.serialtool;
 
+import github.nonoas.jfx.flat.ui.AppState;
 import github.nonoas.jfx.flat.ui.theme.LightTheme;
 import indi.lt.serialtool.controller.SerialController;
 import indi.lt.serialtool.view.BaseStage;
@@ -37,6 +38,7 @@ public class SerialApplication extends Application {
         // 现在 controller 已经不是 null 了，且其 @FXML 成员已注入
         appStage.registryDragger(controller.getMenuBar());
 
+        AppState.setStage(appStage.getStage());
         appStage.show();
     }
 }
