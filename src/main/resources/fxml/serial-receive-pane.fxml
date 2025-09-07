@@ -31,8 +31,8 @@
               </HBox>
               <HBox spacing="10.0">
                   <children>
-                      <Button mnemonicParsing="false" styleClass="success" text="保存原始" />
-                      <Button mnemonicParsing="false" styleClass="success" text="保存过滤" />
+                      <Button fx:id="btnSaveOrigin" mnemonicParsing="false" onAction="#saveOriginLogs" styleClass="success" text="保存原始" />
+                      <Button fx:id="btnSaveFilter" mnemonicParsing="false" onAction="#saveFilterLogs" styleClass="success" text="保存过滤" />
                       <Button mnemonicParsing="false" onAction="#restoreScrolling" text="恢复滚动" />
                       <Button fx:id="btnClearRecvData" mnemonicParsing="false" onAction="#clearLogs" text="清空数据" />
                   </children>

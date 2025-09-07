@@ -35,7 +35,7 @@ public class PromptInlineCssTextArea extends StackPane {
     // 缓存竖直滚动条
     private ScrollBar verticalBar;
     private static final double EPS = 1e-3;
-    private final int maxLines = 50;
+    private final int maxLines = 500;
 
     public PromptInlineCssTextArea() {
         setPadding(new Insets(2, 2, 2, 2));

@@ -14,9 +14,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.FileChooser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,6 +91,48 @@ public class SerialReceiveCtrl implements Initializable {
     @FXML
     private void clearLogs() {
         textAreaOrigin.getArea().clear();
+    }
+
+    @FXML
+    private void saveOriginLogs() {
+        LOG.info("saveOriginLogs");
+
+        // 1. 获取文本
+        String content = textAreaOrigin.getText();
+        if (content == null || content.isEmpty()) {
+            LOG.info("没有日志内容可保存");
+            return;
+        }
+
+        // 2. 选择保存文件
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("保存日志文件");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("文本文件", "*.txt")
+        );
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("所有文件", "*.*")
+        );
+
+        File file = fileChooser.showSaveDialog(textAreaOrigin.getScene().getWindow());
+        if (file == null) {
+            return; // 用户取消
+        }
+
+        // 3. 写入文件
+        try (FileWriter writer = new FileWriter(file, false)) {
+            writer.write(content);
+            LOG.info("日志已保存到: " + file.getAbsolutePath());
+        } catch (IOException e) {
+            LOG.error("保存日志失败", e);
+        }
+    }
+
+
+    @FXML
+    private void saveFilterLogs() {
+        LOG.info("saveFilterLogs");
+        //textAreaOrigin.getArea().clear();
     }
 
 
