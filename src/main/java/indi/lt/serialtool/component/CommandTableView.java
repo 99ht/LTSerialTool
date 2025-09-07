@@ -1,24 +1,16 @@
 package indi.lt.serialtool.component;
 
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import atlantafx.base.theme.Styles;
+import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
+import indi.lt.serialtool.data.CommandRepository;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -49,6 +41,7 @@ public class CommandTableView extends TableView<CommandTableView.CommandItem> {
 
         // 列：操作
         TableColumn<CommandItem, CommandItem> actionCol = new TableColumn<>("操作");
+        actionCol.setResizable(false);
         actionCol.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
         actionCol.setCellFactory(col -> new TableCell<>() {
             private final Label typeLabel = new Label();
@@ -57,6 +50,11 @@ public class CommandTableView extends TableView<CommandTableView.CommandItem> {
             private final HBox box = new HBox(5, typeLabel, sendBtn, deleteBtn);
 
             {
+                HBox.setHgrow(typeLabel, Priority.ALWAYS);
+                typeLabel.setMaxWidth(Double.MAX_VALUE);
+
+                deleteBtn.setMinWidth(50);
+                deleteBtn.getStyleClass().add(Styles.DANGER);
                 box.setAlignment(Pos.CENTER_LEFT);
                 sendBtn.setOnAction(e -> {
                     CommandItem item = getItem();
@@ -64,11 +62,13 @@ public class CommandTableView extends TableView<CommandTableView.CommandItem> {
                         LOG.info("发送: " + item.getCommand());
                     }
                 });
+                sendBtn.getStyleClass().add(Styles.ACCENT);
 
                 deleteBtn.setOnAction(e -> {
                     CommandItem item = getItem();
                     if (item != null) {
                         getTableView().getItems().remove(item);
+                        TaskHandler.backRun(()-> CommandRepository.INSTANCE.remove(item));
                     }
                 });
             }
@@ -84,7 +84,7 @@ public class CommandTableView extends TableView<CommandTableView.CommandItem> {
                 }
             }
         });
-        actionCol.setPrefWidth(250);
+        actionCol.setPrefWidth(155);
 
         // 列：定时发送
         TableColumn<CommandItem, CommandItem> scheduleCol = new TableColumn<>("定时发送");
@@ -133,13 +133,17 @@ public class CommandTableView extends TableView<CommandTableView.CommandItem> {
 
     // 数据模型
     public static class CommandItem {
+
+        private final StringProperty id = new SimpleStringProperty();
+
         private final StringProperty remark = new SimpleStringProperty();
         private final StringProperty command = new SimpleStringProperty();
         private final StringProperty commandType = new SimpleStringProperty("类型A");
         private final IntegerProperty interval = new SimpleIntegerProperty(1000);
         private final BooleanProperty scheduled = new SimpleBooleanProperty(false);
 
-        public CommandItem(String remark, String command, String commandType) {
+        public CommandItem(String id, String remark, String command, String commandType) {
+            this.setId(id);
             this.remark.set(remark);
             this.command.set(command);
             this.commandType.set(commandType);
@@ -203,6 +207,31 @@ public class CommandTableView extends TableView<CommandTableView.CommandItem> {
 
         public BooleanProperty scheduledProperty() {
             return scheduled;
+        }
+
+        public String getId() {
+            return id.get();
+        }
+
+        public StringProperty idProperty() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id.set(id);
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof CommandItem)) {
+                return false;
+            }
+            return getId().equals(((CommandItem) obj).getId());
         }
     }
 }

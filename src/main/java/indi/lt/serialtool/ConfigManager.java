@@ -1,11 +1,20 @@
 package indi.lt.serialtool;
 
-import java.io.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
 public class ConfigManager {
+
+    private static final Logger LOG = LogManager.getLogger(ConfigManager.class);
+
     private static final String CONFIG_DIR = System.getProperty("user.home") + File.separator + ".serialtool";
     private static final String CONFIG_FILE = CONFIG_DIR + File.separator + "config.properties";
 
@@ -28,7 +37,7 @@ public class ConfigManager {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error(e);
         }
     }
 
@@ -36,7 +45,7 @@ public class ConfigManager {
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             props.store(writer, "SerialTool Configuration");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error(e);
         }
     }
 

@@ -1,8 +1,10 @@
 package indi.lt.serialtool.controller;
 
 import github.nonoas.jfx.flat.ui.AppState;
+import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
 import github.nonoas.jfx.flat.ui.stage.ToastQueue;
 import indi.lt.serialtool.component.CommandTableView;
+import indi.lt.serialtool.data.CommandRepository;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
@@ -12,7 +14,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URL;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
 /**
  * @author Nonoas
@@ -21,7 +26,6 @@ import java.util.ResourceBundle;
  */
 public class SerialSendCtrl implements Initializable {
     private final Logger LOG = LogManager.getLogger(SerialSendCtrl.class);
-
     @FXML
     public TextField tfRemark;
     @FXML
@@ -37,6 +41,11 @@ public class SerialSendCtrl implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         spTableContainer.getChildren().add(table);
+
+        new TaskHandler<List<CommandTableView.CommandItem>>()
+                .whenCall(CommandRepository.INSTANCE::loadAll)
+                .andThen(e -> table.getItems().addAll(e))
+                .handle();
     }
 
     @FXML
@@ -51,6 +60,10 @@ public class SerialSendCtrl implements Initializable {
         } else {
             commandType = "TXT";
         }
-        table.getItems().add(new CommandTableView.CommandItem(tfRemark.getText(), tfCommand.getText(), commandType));
+        CommandTableView.CommandItem commandItem = new CommandTableView.CommandItem(
+                UUID.randomUUID().toString(),
+                tfRemark.getText(), tfCommand.getText(), commandType);
+        table.getItems().add(commandItem);
+        CommandRepository.INSTANCE.add(commandItem);
     }
 }
