@@ -16,7 +16,7 @@ public class SerialReceivePane extends StackPane {
 
     private SerialReceiveCtrl controller;
 
-    public SerialReceivePane(String serialName){
+    public SerialReceivePane(String serialName,String serialKey){
         FXMLLoader fxmlLoader = new FXMLLoader(
                 getClass().getResource("/fxml/serial-receive-pane.fxml")
         );
@@ -26,6 +26,8 @@ public class SerialReceivePane extends StackPane {
             fxmlLoader.load(); // 加载 fxml
             controller = fxmlLoader.getController(); // 获取逻辑控制器
             controller.setSerialName(serialName);
+            controller.setKeyLastSerial(serialKey);
+            controller.initSerialComboBoxAction();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

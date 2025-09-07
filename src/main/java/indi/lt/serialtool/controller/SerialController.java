@@ -68,8 +68,8 @@ public class SerialController implements Initializable {
             }
         });
 
-        SerialReceivePane serialReceivePane1 = new SerialReceivePane("串口1:");
-        SerialReceivePane serialReceivePane2 = new SerialReceivePane("串口2:");
+        SerialReceivePane serialReceivePane1 = new SerialReceivePane("串口1:","serialKey1");
+        SerialReceivePane serialReceivePane2 = new SerialReceivePane("串口2:","serialKey2");
         spReceive.getItems().addAll(serialReceivePane1, serialReceivePane2);
         stpRootPane.getChildren().add(spReceive);
     }

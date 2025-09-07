@@ -69,7 +69,7 @@ public class SerialReceiveCtrl implements Initializable {
 
     private InlineCssRegexHighlighter highlighter;
 
-    private static final String KEY_LAST_SERIAL = "lastSerialPort";
+    private String keyLastSerial;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -78,7 +78,6 @@ public class SerialReceiveCtrl implements Initializable {
     }
 
     private void registerSerialEvent() {
-        initSerialComboBoxAction();
         initOpenSerialButtonAction();
         initBautRateComboBoxAction();
     }
@@ -178,7 +177,7 @@ public class SerialReceiveCtrl implements Initializable {
         serialReadService.start();
     }
 
-    private void initSerialComboBoxAction() {
+    public void initSerialComboBoxAction() {
         // 1. 展开下拉框时刷新列表（保留，但刷新逻辑已优化）
         cbSerialList.setOnShowing(event -> refreshSerialList());
 
@@ -196,7 +195,7 @@ public class SerialReceiveCtrl implements Initializable {
         cbSerialList.getItems().addAll(serialList);
         cbSerialList.getSelectionModel().selectFirst();
 
-        String lastSerial = ConfigManager.get(KEY_LAST_SERIAL, null);
+        String lastSerial = ConfigManager.get(keyLastSerial, null);
         if (lastSerial != null && serialList.contains(lastSerial)) {
             cbSerialList.setValue(lastSerial);
             LOG.info("恢复上次串口选择: " + lastSerial);
@@ -209,7 +208,7 @@ public class SerialReceiveCtrl implements Initializable {
     private void onSerialPortClicked() {
         String selected = cbSerialList.getValue();
         if (selected != null) {
-            ConfigManager.set(KEY_LAST_SERIAL, selected);
+            ConfigManager.set(keyLastSerial, selected);
             LOG.info("保存上次串口选择: " + selected);
         }
         closeSelectSerial();
@@ -295,5 +294,8 @@ public class SerialReceiveCtrl implements Initializable {
 
     public void setSerialName(String serialName) {
         this.lbSerialName.setText(serialName);
+    }
+    public void setKeyLastSerial(String keyLastSerial) {
+        this.keyLastSerial = keyLastSerial;
     }
 }
