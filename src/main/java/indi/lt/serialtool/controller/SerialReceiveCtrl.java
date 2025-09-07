@@ -2,6 +2,7 @@ package indi.lt.serialtool.controller;
 
 import com.fazecast.jSerialComm.SerialPort;
 import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
+import indi.lt.serialtool.ConfigManager;
 import indi.lt.serialtool.component.InlineCssRegexHighlighter;
 import indi.lt.serialtool.component.PromptInlineCssTextArea;
 import indi.lt.serialtool.component.SerialToggleButton;
@@ -67,6 +68,8 @@ public class SerialReceiveCtrl implements Initializable {
     private SerialPort comPort;
 
     private InlineCssRegexHighlighter highlighter;
+
+    private static final String KEY_LAST_SERIAL = "lastSerialPort";
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -192,14 +195,27 @@ public class SerialReceiveCtrl implements Initializable {
         }
         cbSerialList.getItems().addAll(serialList);
         cbSerialList.getSelectionModel().selectFirst();
+
+        String lastSerial = ConfigManager.get(KEY_LAST_SERIAL, null);
+        if (lastSerial != null && serialList.contains(lastSerial)) {
+            cbSerialList.setValue(lastSerial);
+            LOG.info("恢复上次串口选择: " + lastSerial);
+        } else if (!serialList.isEmpty()) {
+            cbSerialList.getSelectionModel().selectFirst();
+        }
+
     }
 
     private void onSerialPortClicked() {
-        // 手动选中后的逻辑（如切换串口）
+        String selected = cbSerialList.getValue();
+        if (selected != null) {
+            ConfigManager.set(KEY_LAST_SERIAL, selected);
+            LOG.info("保存上次串口选择: " + selected);
+        }
         closeSelectSerial();
         openSelectSerial(cbSerialList, cbBautRateList);
-
     }
+
 
     private void initOpenSerialButtonAction() {
         btnOpenSerial.selectedProperty().addListener((observableValue, oldVal, newVal) -> {
