@@ -23,6 +23,7 @@ import org.fxmisc.richtext.model.StyleSpans;
 import org.reactfx.collection.LiveList;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class PromptInlineCssTextArea extends StackPane {
 
@@ -31,6 +32,8 @@ public class PromptInlineCssTextArea extends StackPane {
 
     private final SimpleBooleanProperty autoScroll = new SimpleBooleanProperty(true);
     private final StringProperty promptText = new SimpleStringProperty(this, "promptText", "");
+
+    private final ConcurrentLinkedQueue<String> buffer = new ConcurrentLinkedQueue<>();
 
     // 缓存竖直滚动条
     private ScrollBar verticalBar;
@@ -164,15 +167,33 @@ public class PromptInlineCssTextArea extends StackPane {
         area.setStyleSpans(i, plain);
     }
 
-    public void appendText(String batch) {
-        if (batch == null || batch.isEmpty()) return;
-        Runnable r = () -> {
-            area.appendText(batch);
-            trimByMaxLines(this, maxLines);
-            if (autoScroll.get()) moveToEnd();
-        };
-        if (Platform.isFxApplicationThread()) r.run();
-        else Platform.runLater(r);
+    public void appendText(String text) {
+        if (text == null || text.isEmpty()) return;
+        buffer.add(text);
+        // 批量刷新 UI
+        this.flushBuffer();
+    }
+
+    private void flushBuffer() {
+        StringBuilder sb = new StringBuilder();
+        String text;
+        while ((text = buffer.poll()) != null) {
+            sb.append(text);
+        }
+        if (sb.isEmpty()) return;
+
+        int startPara = area.getParagraphs().size();
+        area.appendText(sb.toString());
+
+        // 裁剪超出行数，只删除头部多余行
+        int totalPara = area.getParagraphs().size();
+        if (totalPara > maxLines) {
+            int remove = totalPara - maxLines;
+            int cutOffset = area.getAbsolutePosition(remove, 0);
+            area.replaceText(0, cutOffset, "");
+        }
+
+        if (autoScroll.get()) moveToEnd();
     }
 
     /**

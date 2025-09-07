@@ -2,7 +2,6 @@ package indi.lt.serialtool.service;
 
 import com.fazecast.jSerialComm.SerialPort;
 import indi.lt.serialtool.component.PromptInlineCssTextArea;
-import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.scene.control.CheckBox;
@@ -18,6 +17,8 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 串口读取服务：
@@ -26,7 +27,7 @@ import java.nio.charset.StandardCharsets;
  * - 追加到 InlineCssTextArea 后按“最大行数”裁剪（段落级，性能更好）
  * - 可选集成高亮器：每次追加/裁剪后调度一次高亮刷新
  */
-public class SerialReadService extends Service<Void> {
+public class SerialReadService extends Service<SerialReadService.LogText> {
     private static final Logger LOG = LogManager.getLogger(SerialReadService.class);
 
     private final SerialPort comPort;
@@ -51,25 +52,31 @@ public class SerialReadService extends Service<Void> {
 
     public SerialReadService(SerialPort comPort,
                              PromptInlineCssTextArea targetTextArea,
-                             CheckBox cbTimeDisplay) {
-        this(comPort, targetTextArea, cbTimeDisplay, null);
-    }
-
-    public SerialReadService(SerialPort comPort,
-                             PromptInlineCssTextArea targetTextArea,
                              CheckBox cbTimeDisplay,
                              HighlighterScheduler highlighter) {
         this.comPort = comPort;
         this.targetTextArea = targetTextArea;
         this.cbTimeDisplay = cbTimeDisplay;
         this.highlighterScheduler = highlighter;
+        valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                LOG.debug("追加文本：" + newValue);
+                String text;
+                if (cbTimeDisplay.isSelected()) {
+                    text = newValue.toString();
+                } else {
+                    text = newValue.text;
+                }
+                appendText(text + "\n");
+            }
+        });
     }
 
     @Override
-    protected Task<Void> createTask() {
+    protected Task<LogText> createTask() {
         return new Task<>() {
             @Override
-            protected Void call() {
+            protected LogText call() {
                 try (InputStream in = comPort.getInputStream()) {
 
                     // UTF-8 增量解码器：跨包安全
@@ -106,22 +113,15 @@ public class SerialReadService extends Service<Void> {
                         if (!uiBatch.isEmpty()) {
                             String batch = uiBatch.toString();
                             uiBatch.setLength(0);
-                            Platform.runLater(() -> {
-                                targetTextArea.appendText(batch);
-                                if (highlighterScheduler != null) highlighterScheduler.schedule();
-                            });
+                            updateValue(formatLine(batch));
                         }
                     }
 
                     // 收尾：如果还有未结束的一行（无换行结尾）
                     if (!lineBuf.isEmpty()) {
-                        String leftover = formatLine(lineBuf.toString(), cbTimeDisplay.isSelected());
-                        Platform.runLater(() -> {
-                            targetTextArea.appendText(leftover);
-                            if (highlighterScheduler != null) highlighterScheduler.schedule();
-                        });
+                        LogText leftover = formatLine(lineBuf.toString());
+                        updateValue(leftover);
                     }
-
                 } catch (CharacterCodingException e) {
                     LOG.error("UTF-8 decoding error", e);
                 } catch (IOException e) {
@@ -140,6 +140,11 @@ public class SerialReadService extends Service<Void> {
         };
     }
 
+    private void appendText(String batch) {
+        targetTextArea.appendText(batch);
+        if (highlighterScheduler != null) highlighterScheduler.schedule();
+    }
+
     /**
      * 将解码后的字符流按行切分追加到 uiBatch。
      * 支持 \n 与 \r\n；统一以 '\n' 结尾。
@@ -153,7 +158,7 @@ public class SerialReadService extends Service<Void> {
                 if (end > 0 && lineBuf.charAt(end - 1) == '\r') {
                     lineBuf.setLength(end - 1);
                 }
-                uiBatch.append(formatLine(lineBuf.toString(), cbTimeDisplay.isSelected()));
+                uiBatch.append(formatLine(lineBuf.toString()).text);
                 lineBuf.setLength(0);
             } else {
                 lineBuf.append(c);
@@ -164,13 +169,36 @@ public class SerialReadService extends Service<Void> {
     /**
      * 根据是否带时间戳，格式化一行，并追加换行符。
      */
-    private String formatLine(String raw, boolean withTime) {
-        if (withTime) {
-            String ts = java.time.LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
-            return "[" + ts + "] " + raw + "\n";
-        } else {
-            return raw + "\n";
+    private LogText formatLine(String raw) {
+        String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
+        return new LogText(ts, raw);
+    }
+
+    public static class LogText {
+        private final String timeStamp;
+        private final String text;
+
+        public LogText(String timeStamp, String text) {
+            this.timeStamp = timeStamp;
+            this.text = text;
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof LogText)) {
+                return false;
+            }
+            return String.valueOf(this).equals(String.valueOf(obj));
+        }
+
+        @Override
+        public String toString() {
+            return "[" + timeStamp + "] " + text;
         }
     }
 }

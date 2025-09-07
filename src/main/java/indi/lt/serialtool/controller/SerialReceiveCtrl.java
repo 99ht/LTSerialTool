@@ -208,8 +208,11 @@ public class SerialReceiveCtrl implements Initializable {
     private void onSerialPortClicked() {
         String selected = cbSerialList.getValue();
         if (selected != null) {
-            ConfigManager.set(keyLastSerial, selected);
+            TaskHandler.backRun(() -> ConfigManager.set(keyLastSerial, selected));
             LOG.info("保存上次串口选择: " + selected);
+        }
+        if (!btnOpenSerial.isSelected()) {
+            return;
         }
         closeSelectSerial();
         openSelectSerial(cbSerialList, cbBautRateList);

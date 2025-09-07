@@ -43,7 +43,7 @@ public class InlineCssRegexHighlighter {
         // 正则 / 样式参数变化 → 需要全量刷新
         patternText.addListener((o, a, b) -> scheduleFull());
         highlightColor.addListener((o, a, b) -> scheduleFull());
-        caseInsensitive.addListener((o, a, b) -> scheduleFull());
+        caseInsensitive.addListener((o, a, b) -> InlineCssRegexHighlighter.this.scheduleFull());
         alpha.addListener((o, a, b) -> scheduleFull());
 
         // 文本变化时 → 增量处理
