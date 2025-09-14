@@ -62,7 +62,7 @@ public class PromptInlineCssTextArea extends StackPane {
         area.textProperty().addListener((observable, oldValue, newValue) -> {
             if (null == newValue || newValue.isEmpty()) {
                 area.setParagraphGraphicFactory(null);
-            } else {
+            } else if (area.getParagraphGraphicFactory() == null) {
                 area.setParagraphGraphicFactory(LineNumberFactory.get(area));
             }
         });
