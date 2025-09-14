@@ -95,7 +95,7 @@ public class SerialController implements Initializable {
     @FXML
     public void goToWebsite(ActionEvent actionEvent) {
         try {
-            Desktop.getDesktop().browse(new URI("https://github.com/99ht/LTSerialTool"));
+            Desktop.getDesktop().browse(new URI("https://nonoas.github.io/"));
         } catch (Exception ex) {
             LOG.error(ex);
         }
