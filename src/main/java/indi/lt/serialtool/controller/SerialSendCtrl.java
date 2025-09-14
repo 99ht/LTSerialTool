@@ -4,6 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import github.nonoas.jfx.flat.ui.AppState;
 import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
 import github.nonoas.jfx.flat.ui.stage.ToastQueue;
+import indi.lt.serialtool.ConfigManager;
 import indi.lt.serialtool.component.CommandTableView;
 import indi.lt.serialtool.data.CommandRepository;
 import javafx.fxml.FXML;
@@ -14,77 +15,175 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 串口发送控制器
- * 固定使用 COM3，115200，8N1
- * @author
  */
 public class SerialSendCtrl implements Initializable {
 
     private final Logger LOG = LogManager.getLogger(SerialSendCtrl.class);
 
-    @FXML public TextField tfRemark;
-    @FXML public TextField tfCommand;
-    @FXML public TextArea taSendArea;
-    @FXML public CheckBox cbIsHex;
-    @FXML public Button btnSend; //发送按钮
+    @FXML private TextField tfRemark;
+    @FXML private TextField tfCommand;
+    @FXML private TextArea taSendArea;
+    @FXML private CheckBox cbIsHex;
+
+    @FXML private ComboBox<String> cbSerialList;
+    @FXML private ComboBox<Integer> cbBautrate;
+    @FXML private Button btnSend;
+    @FXML private Button btnOpenSerial;
     @FXML private StackPane spTableContainer;
 
     private final CommandTableView table = new CommandTableView();
 
-    // 串口对象
-    private SerialPort serialPort;
+    // 当前打开的串口
+    private SerialPort comPort;
+
+    // 保存上次串口选择的 key
+    private final String keyLastSerial = "lastSerialPort";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         spTableContainer.getChildren().add(table);
+        initBaudRateList();
+        initSerialComboBox();
+        loadHistoryCommands();
+        setupButtonActions();
 
-        // 加载历史指令
-        new TaskHandler<List<CommandTableView.CommandItem>>()
-                .whenCall(CommandRepository.INSTANCE::loadAll)
-                .andThen(e -> table.getItems().addAll(e))
-                .handle();
-
-        // 打开串口（先固定 COM3 115200 8N1）
-        openFixedSerialPort();
-
-        // 绑定发送按钮
-        btnSend.setOnAction(e -> sendData());
+        // 启动时默认打开第一个串口
+        openSelectedSerial();
     }
 
-    /**
-     * 打开固定参数的串口
-     */
-    private void openFixedSerialPort() {
-        try {
-            serialPort = SerialPort.getCommPort("COM7"); // 固定为 COM3
-            serialPort.setComPortParameters(1500000, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-            serialPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
+    /** 初始化波特率下拉列表 */
+    private void initBaudRateList() {
+        List<Integer> baudRates = Arrays.asList(1200, 2400, 4800, 9600, 38400, 57600, 115200, 230400, 1500000, 2000000, 3000000);
+        cbBautrate.getItems().clear();
+        cbBautrate.getItems().addAll(baudRates);
+        cbBautrate.getSelectionModel().select(Integer.valueOf(115200));
+    }
 
-            if (serialPort.openPort()) {
-                LOG.info("串口已打开: " + serialPort.getSystemPortName());
-                ToastQueue.show(AppState.getStage(), "串口已打开: " + serialPort.getSystemPortName(), 1000);
-            } else {
-                LOG.error("串口打开失败");
-                ToastQueue.show(AppState.getStage(), "串口打开失败", 1000);
+    /** 初始化串口下拉列表 */
+    private void initSerialComboBox() {
+        refreshSerialList();
+
+        // 展开下拉框时刷新列表
+        cbSerialList.setOnShowing(event -> refreshSerialList());
+
+        // 选中串口时自动打开
+        cbSerialList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.equals(oldVal)) {
+                openSelectedSerial();
             }
-        } catch (Exception e) {
-            LOG.error("打开串口异常", e);
+        });
+
+        // 选中波特率变化时重新打开串口
+        cbBautrate.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (comPort != null && comPort.isOpen()) {
+                openSelectedSerial();
+            }
+        });
+    }
+
+    /** 加载历史命令 */
+    private void loadHistoryCommands() {
+        new TaskHandler<List<CommandTableView.CommandItem>>()
+                .whenCall(CommandRepository.INSTANCE::loadAll)
+                .andThen(table.getItems()::addAll)
+                .handle();
+    }
+
+    /** 绑定按钮事件 */
+    private void setupButtonActions() {
+        btnSend.setOnAction(e -> sendData());
+
+        btnOpenSerial.setOnAction(e -> {
+            if (comPort != null && comPort.isOpen()) {
+                // 串口已打开 → 关闭
+                closeSerial();
+            } else {
+                // 串口未打开 → 打开
+                openSelectedSerial();
+            }
+        });
+    }
+
+    /** 刷新串口列表 */
+    private void refreshSerialList() {
+        String lastSerial = ConfigManager.get(keyLastSerial, null);
+        cbSerialList.getItems().clear();
+        for (SerialPort port : SerialPort.getCommPorts()) {
+            cbSerialList.getItems().add(port.getSystemPortName() + " - " + port.getDescriptivePortName());
+        }
+        if (lastSerial != null && cbSerialList.getItems().contains(lastSerial)) {
+            cbSerialList.setValue(lastSerial);
+        } else if (!cbSerialList.getItems().isEmpty()) {
+            cbSerialList.getSelectionModel().selectFirst();
         }
     }
 
-    /**
-     * 点击发送按钮时调用
-     */
+    /** 打开用户选择的串口 */
+    private void openSelectedSerial() {
+        if (cbSerialList.getItems().isEmpty()) {
+            LOG.warn("串口列表为空，无法打开串口");
+            ToastQueue.show(AppState.getStage(), "未检测到串口设备", 800);
+            return;
+        }
+
+        String selectedSerial = cbSerialList.getValue();
+        if (selectedSerial == null || selectedSerial.isEmpty()) {
+            selectedSerial = cbSerialList.getItems().get(0);
+            cbSerialList.setValue(selectedSerial);
+        }
+
+        SerialPort[] ports = SerialPort.getCommPorts();
+        int index = cbSerialList.getSelectionModel().getSelectedIndex();
+        if (index < 0 || index >= ports.length) {
+            LOG.warn("串口索引超出范围");
+            return;
+        }
+
+        // 关闭已有串口
+        if (comPort != null && comPort.isOpen()) {
+            comPort.closePort();
+            LOG.info("关闭旧串口");
+        }
+
+        comPort = ports[index];
+
+        int baudRate = cbBautrate.getValue() != null ? cbBautrate.getValue() : 115200;
+        comPort.setComPortParameters(baudRate, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+        comPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
+
+        if (comPort.openPort()) {
+            LOG.info("串口已打开: " + comPort.getSystemPortName() + " @ " + baudRate);
+            ToastQueue.show(AppState.getStage(), "串口已打开: " + comPort.getSystemPortName(), 800);
+            ConfigManager.set(keyLastSerial, selectedSerial);
+            btnOpenSerial.setText("关闭串口");
+        } else {
+            LOG.error("串口打开失败: " + comPort.getSystemPortName());
+            ToastQueue.show(AppState.getStage(), "串口打开失败", 800);
+            btnOpenSerial.setText("打开串口");
+        }
+    }
+
+    /** 关闭串口 */
+    public void closeSerial() {
+        if (comPort != null && comPort.isOpen()) {
+            comPort.closePort();
+            LOG.info("串口已关闭");
+            ToastQueue.show(AppState.getStage(), "串口已关闭", 800);
+            btnOpenSerial.setText("打开串口");
+        }
+    }
+
+    /** 发送数据 */
     private void sendData() {
-        if (serialPort == null || !serialPort.isOpen()) {
+        if (comPort == null || !comPort.isOpen()) {
             ToastQueue.show(AppState.getStage(), "串口未打开", 800);
             return;
         }
+
         String text = taSendArea.getText();
         if (text == null || text.trim().isEmpty()) {
             ToastQueue.show(AppState.getStage(), "发送内容不能为空", 800);
@@ -92,13 +191,8 @@ public class SerialSendCtrl implements Initializable {
         }
 
         try {
-            byte[] data;
-            if (cbIsHex.isSelected()) {
-                data = hexStringToBytes(text.trim());
-            } else {
-                data = text.getBytes();
-            }
-            serialPort.writeBytes(data, data.length);
+            byte[] data = cbIsHex.isSelected() ? hexStringToBytes(text.trim()) : text.getBytes();
+            comPort.writeBytes(data, data.length);
             LOG.info("发送成功: " + text);
         } catch (Exception e) {
             LOG.error("发送失败", e);
@@ -106,49 +200,32 @@ public class SerialSendCtrl implements Initializable {
         }
     }
 
-    /**
-     * 添加自定义指令
-     */
+    /** 添加自定义命令 */
     @FXML
-    public void addCommand() {
+    private void addCommand() {
         if (tfCommand.getText().trim().isEmpty()) {
             ToastQueue.show(AppState.getStage(), "指令不能为空", 500);
             return;
         }
-        String commandType = cbIsHex.isSelected() ? "HEX" : "TXT";
-        CommandTableView.CommandItem commandItem = new CommandTableView.CommandItem(
+
+        String type = cbIsHex.isSelected() ? "HEX" : "TXT";
+        CommandTableView.CommandItem item = new CommandTableView.CommandItem(
                 UUID.randomUUID().toString(),
                 tfRemark.getText(),
                 tfCommand.getText(),
-                commandType
+                type
         );
-        table.getItems().add(commandItem);
-        CommandRepository.INSTANCE.add(commandItem);
+        table.getItems().add(item);
+        CommandRepository.INSTANCE.add(item);
     }
 
-    /**
-     * 窗口关闭时释放串口
-     */
-    public void close() {
-        if (serialPort != null && serialPort.isOpen()) {
-            serialPort.closePort();
-            LOG.info("串口已关闭");
-        }
-    }
-
-    /**
-     * HEX字符串转字节数组
-     */
+    /** HEX 转 byte */
     private byte[] hexStringToBytes(String hex) {
         hex = hex.replaceAll("\\s+", "");
-        if (hex.length() % 2 != 0) {
-            hex = "0" + hex;
-        }
+        if (hex.length() % 2 != 0) hex = "0" + hex;
         byte[] result = new byte[hex.length() / 2];
         for (int i = 0; i < result.length; i++) {
-            int index = i * 2;
-            int val = Integer.parseInt(hex.substring(index, index + 2), 16);
-            result[i] = (byte) val;
+            result[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2), 16);
         }
         return result;
     }

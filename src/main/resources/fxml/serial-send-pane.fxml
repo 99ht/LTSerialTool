@@ -13,6 +13,8 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.control.ToggleButton?>
+<?import indi.lt.serialtool.component.SerialToggleButton?>
 <fx:root dividerPositions="0.6" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="462.0" prefWidth="598.0" type="SplitPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialSendCtrl">
   <items>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
@@ -34,17 +36,17 @@
                               <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="250.0" spacing="10.0" VBox.vgrow="ALWAYS">
                                  <children>
                                     <Label minWidth="50.0" text="串口：" />
-                                    <ComboBox maxWidth="1.7976931348623157E308" prefWidth="150.0" HBox.hgrow="ALWAYS" />
+                                    <ComboBox fx:id="cbSerialList" maxWidth="1.7976931348623157E308" prefWidth="150.0" HBox.hgrow="ALWAYS" />
                                  </children>
                               </HBox>
                               <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
                                  <children>
                                     <Label minWidth="50.0" text="波特率：" />
-                                    <ComboBox prefWidth="150.0" HBox.hgrow="ALWAYS" />
+                                    <ComboBox fx:id="cbBautrate" prefWidth="150.0" HBox.hgrow="ALWAYS" />
                                     <Button minWidth="80.0" mnemonicParsing="false" text="更多设置" />
                                  </children>
                               </HBox>
-                              <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="打开串口" />
+                              <Button fx:id="btnOpenSerial" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="打开串口" />
                            </children>
                         </VBox>
                         <VBox prefHeight="150.0" prefWidth="100.0">
