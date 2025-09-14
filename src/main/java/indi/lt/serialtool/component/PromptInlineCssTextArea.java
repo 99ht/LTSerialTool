@@ -1,5 +1,6 @@
 package indi.lt.serialtool.component;
 
+import atlantafx.base.theme.Styles;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -44,6 +45,7 @@ public class PromptInlineCssTextArea extends StackPane {
         setPadding(new Insets(2, 2, 2, 2));
         Label promptLabel = new Label();
 
+        area.getStyleClass().add(Styles.BG_DEFAULT);
         vsPane = new VirtualizedScrollPane<>(area);
         getChildren().addAll(vsPane, promptLabel);
 

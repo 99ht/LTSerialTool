@@ -46,7 +46,7 @@ application {
 
 javafx {
     version = "${versions.jfx}"
-    modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics']
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics','javafx.swing']
 }
 
 def os = org.gradle.internal.os.OperatingSystem.current()
