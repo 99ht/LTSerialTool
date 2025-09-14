@@ -6,9 +6,11 @@ import indi.lt.serialtool.controller.SerialController;
 import indi.lt.serialtool.view.BaseStage;
 import indi.lt.serialtool.view.MainStage;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

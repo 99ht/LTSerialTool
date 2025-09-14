@@ -3,6 +3,9 @@ package indi.lt.serialtool.controller;
 import github.nonoas.jfx.flat.ui.theme.DarkTheme;
 import github.nonoas.jfx.flat.ui.theme.LightTheme;
 import indi.lt.serialtool.SerialApplication;
+import indi.lt.serialtool.view.AsciiStage;
+import indi.lt.serialtool.view.AsciiTablePane;
+import indi.lt.serialtool.view.BaseStage;
 import indi.lt.serialtool.view.SerialReceivePane;
 import indi.lt.serialtool.view.SerialSendPane;
 import javafx.event.ActionEvent;
@@ -100,5 +103,10 @@ public class SerialController implements Initializable {
         } catch (Exception ex) {
             LOG.error(ex);
         }
+    }
+
+    @FXML
+    public void openAsciiTable(ActionEvent actionEvent) {
+        AsciiStage.showStage();
     }
 }

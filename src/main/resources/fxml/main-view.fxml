@@ -36,7 +36,7 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="工具">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="ASCII码表"/>
+                        <MenuItem mnemonicParsing="false" text="ASCII码表" onAction="#openAsciiTable"/>
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="模式">
