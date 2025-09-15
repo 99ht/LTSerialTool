@@ -9,13 +9,20 @@ import indi.lt.serialtool.component.CommandTableView;
 import indi.lt.serialtool.data.CommandRepository;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.UUID;
 
 /**
  * 串口发送控制器
@@ -55,7 +62,7 @@ public class SerialSendCtrl implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         spTableContainer.getChildren().add(table);
-        cbSerialList.setVisibleRowCount(5);
+        cbSerialList.setVisibleRowCount(15);
         initBaudRateList();
         initSerialComboBox();
         loadHistoryCommands();
@@ -136,9 +143,18 @@ public class SerialSendCtrl implements Initializable {
         new TaskHandler<SerialPort[]>()
                 .whenCall(SerialPort::getCommPorts)
                 .andThen(ports -> {
+                    // 清空列表
+                    cbSerialList.getItems().clear();
+
                     for (SerialPort port : ports) {
                         cbSerialList.getItems().add(port.getSystemPortName() + " - " + port.getDescriptivePortName());
                     }
+
+                    // 根據實際項目數量設定可見行數
+                    int itemCount = cbSerialList.getItems().size();
+                    // 設定一個上限，例如10行
+                    cbSerialList.setVisibleRowCount(Math.min(itemCount, 5));
+
                     if (lastSerial != null && cbSerialList.getItems().contains(lastSerial)) {
                         cbSerialList.setValue(lastSerial);
                     } else if (!cbSerialList.getItems().isEmpty()) {
