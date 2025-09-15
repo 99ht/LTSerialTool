@@ -24,16 +24,25 @@ public class SerialSendCtrl implements Initializable {
 
     private final Logger LOG = LogManager.getLogger(SerialSendCtrl.class);
 
-    @FXML private TextField tfRemark;
-    @FXML private TextField tfCommand;
-    @FXML private TextArea taSendArea;
-    @FXML private CheckBox cbIsHex;
+    @FXML
+    private TextField tfRemark;
+    @FXML
+    private TextField tfCommand;
+    @FXML
+    private TextArea taSendArea;
+    @FXML
+    private CheckBox cbIsHex;
 
-    @FXML private ComboBox<String> cbSerialList;
-    @FXML private ComboBox<Integer> cbBautrate;
-    @FXML private Button btnSend;
-    @FXML private Button btnOpenSerial;
-    @FXML private StackPane spTableContainer;
+    @FXML
+    private ComboBox<String> cbSerialList;
+    @FXML
+    private ComboBox<Integer> cbBautrate;
+    @FXML
+    private Button btnSend;
+    @FXML
+    private Button btnOpenSerial;
+    @FXML
+    private StackPane spTableContainer;
 
     private final CommandTableView table = new CommandTableView();
 
@@ -41,11 +50,12 @@ public class SerialSendCtrl implements Initializable {
     private SerialPort comPort;
 
     // 保存上次串口选择的 key
-    private final String keyLastSerial = "lastSerialPort";
+    private final String keyLastSerial = "sendModeLastSerialPort";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         spTableContainer.getChildren().add(table);
+        cbSerialList.setVisibleRowCount(5);
         initBaudRateList();
         initSerialComboBox();
         loadHistoryCommands();
@@ -55,7 +65,9 @@ public class SerialSendCtrl implements Initializable {
         openSelectedSerial();
     }
 
-    /** 初始化波特率下拉列表 */
+    /**
+     * 初始化波特率下拉列表
+     */
     private void initBaudRateList() {
         List<Integer> baudRates = Arrays.asList(1200, 2400, 4800, 9600, 38400, 57600, 115200, 230400, 1500000, 2000000, 3000000);
         cbBautrate.getItems().clear();
@@ -63,7 +75,9 @@ public class SerialSendCtrl implements Initializable {
         cbBautrate.getSelectionModel().select(Integer.valueOf(115200));
     }
 
-    /** 初始化串口下拉列表 */
+    /**
+     * 初始化串口下拉列表
+     */
     private void initSerialComboBox() {
         refreshSerialList();
 
@@ -85,7 +99,9 @@ public class SerialSendCtrl implements Initializable {
         });
     }
 
-    /** 加载历史命令 */
+    /**
+     * 加载历史命令
+     */
     private void loadHistoryCommands() {
         new TaskHandler<List<CommandTableView.CommandItem>>()
                 .whenCall(CommandRepository.INSTANCE::loadAll)
@@ -93,7 +109,9 @@ public class SerialSendCtrl implements Initializable {
                 .handle();
     }
 
-    /** 绑定按钮事件 */
+    /**
+     * 绑定按钮事件
+     */
     private void setupButtonActions() {
         btnSend.setOnAction(e -> sendData());
 
@@ -108,21 +126,31 @@ public class SerialSendCtrl implements Initializable {
         });
     }
 
-    /** 刷新串口列表 */
+    /**
+     * 刷新串口列表
+     */
     private void refreshSerialList() {
         String lastSerial = ConfigManager.get(keyLastSerial, null);
         cbSerialList.getItems().clear();
-        for (SerialPort port : SerialPort.getCommPorts()) {
-            cbSerialList.getItems().add(port.getSystemPortName() + " - " + port.getDescriptivePortName());
-        }
-        if (lastSerial != null && cbSerialList.getItems().contains(lastSerial)) {
-            cbSerialList.setValue(lastSerial);
-        } else if (!cbSerialList.getItems().isEmpty()) {
-            cbSerialList.getSelectionModel().selectFirst();
-        }
+
+        new TaskHandler<SerialPort[]>()
+                .whenCall(SerialPort::getCommPorts)
+                .andThen(ports -> {
+                    for (SerialPort port : ports) {
+                        cbSerialList.getItems().add(port.getSystemPortName() + " - " + port.getDescriptivePortName());
+                    }
+                    if (lastSerial != null && cbSerialList.getItems().contains(lastSerial)) {
+                        cbSerialList.setValue(lastSerial);
+                    } else if (!cbSerialList.getItems().isEmpty()) {
+                        cbSerialList.getSelectionModel().selectFirst();
+                    }
+                })
+                .handle();
     }
 
-    /** 打开用户选择的串口 */
+    /**
+     * 打开用户选择的串口
+     */
     private void openSelectedSerial() {
         if (cbSerialList.getItems().isEmpty()) {
             LOG.warn("串口列表为空，无法打开串口");
@@ -167,7 +195,9 @@ public class SerialSendCtrl implements Initializable {
         }
     }
 
-    /** 关闭串口 */
+    /**
+     * 关闭串口
+     */
     public void closeSerial() {
         if (comPort != null && comPort.isOpen()) {
             comPort.closePort();
@@ -177,7 +207,9 @@ public class SerialSendCtrl implements Initializable {
         }
     }
 
-    /** 发送数据 */
+    /**
+     * 发送数据
+     */
     private void sendData() {
         if (comPort == null || !comPort.isOpen()) {
             ToastQueue.show(AppState.getStage(), "串口未打开", 800);
@@ -200,7 +232,9 @@ public class SerialSendCtrl implements Initializable {
         }
     }
 
-    /** 添加自定义命令 */
+    /**
+     * 添加自定义命令
+     */
     @FXML
     private void addCommand() {
         if (tfCommand.getText().trim().isEmpty()) {
@@ -219,7 +253,9 @@ public class SerialSendCtrl implements Initializable {
         CommandRepository.INSTANCE.add(item);
     }
 
-    /** HEX 转 byte */
+    /**
+     * HEX 转 byte
+     */
     private byte[] hexStringToBytes(String hex) {
         hex = hex.replaceAll("\\s+", "");
         if (hex.length() % 2 != 0) hex = "0" + hex;
