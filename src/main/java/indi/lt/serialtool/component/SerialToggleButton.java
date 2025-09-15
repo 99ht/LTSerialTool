@@ -1,5 +1,6 @@
 package indi.lt.serialtool.component;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.ToggleButton;
 
 /**
@@ -10,14 +11,42 @@ import javafx.scene.control.ToggleButton;
  * @since 1.0.0
  */
 public class SerialToggleButton extends ToggleButton {
+
+    private final SimpleStringProperty selectedText =new SimpleStringProperty("关闭");
+    private final SimpleStringProperty unSelectedText =new SimpleStringProperty("开启");
+
     public SerialToggleButton() {
         getStyleClass().add("serial-toggle-button");
         selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                setText("关闭");
+                setText(selectedText.getValue());
             } else {
-                setText("开启");
+                setText(unSelectedText.getValue());
             }
         });
+    }
+
+    public String getSelectedText() {
+        return selectedText.get();
+    }
+
+    public SimpleStringProperty selectedTextProperty() {
+        return selectedText;
+    }
+
+    public void setSelectedText(String selectedText) {
+        this.selectedText.set(selectedText);
+    }
+
+    public String getUnSelectedText() {
+        return unSelectedText.get();
+    }
+
+    public SimpleStringProperty unSelectedTextProperty() {
+        return unSelectedText;
+    }
+
+    public void setUnSelectedText(String unSelectedText) {
+        this.unSelectedText.set(unSelectedText);
     }
 }

@@ -6,7 +6,11 @@ import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
 import github.nonoas.jfx.flat.ui.stage.ToastQueue;
 import indi.lt.serialtool.ConfigManager;
 import indi.lt.serialtool.component.CommandTableView;
+import indi.lt.serialtool.component.SerialPortCombBox;
+import indi.lt.serialtool.component.SerialToggleButton;
 import indi.lt.serialtool.data.CommandRepository;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -42,13 +46,13 @@ public class SerialSendCtrl implements Initializable {
     private CheckBox cbIsHex;
 
     @FXML
-    private ComboBox<String> cbSerialList;
+    private SerialPortCombBox cbSerialList;
     @FXML
     private ComboBox<Integer> cbBautrate;
     @FXML
     private Button btnSend;
     @FXML
-    private Button btnOpenSerial;
+    private SerialToggleButton btnOpenSerial;
     @FXML
     private StackPane spTableContainer;
 
@@ -63,7 +67,6 @@ public class SerialSendCtrl implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         spTableContainer.getChildren().add(table);
-        cbSerialList.setVisibleRowCount(15);
         initBaudRateList();
         initSerialComboBox();
         loadHistoryCommands();
@@ -88,35 +91,7 @@ public class SerialSendCtrl implements Initializable {
      */
     private void initSerialComboBox() {
         // 串口下拉框初始化
-        new TaskHandler<SerialPortData>()
-                .whenCall(() -> {
-                    String lastSerial = ConfigManager.get(keyLastSerial, null);
-                    SerialPort[] commPorts = SerialPort.getCommPorts();
-                    return new SerialPortData(commPorts, lastSerial);
-                })
-                .andThen(data -> {
-                    // 清空列表
-                    cbSerialList.getItems().clear();
-
-                    for (SerialPort port : data.serialPorts) {
-                        cbSerialList.getItems().add(port.getSystemPortName() + " - " + port.getDescriptivePortName());
-                    }
-
-                    // 根據實際項目數量設定可見行數
-                    int itemCount = cbSerialList.getItems().size();
-                    // 設定一個上限，例如10行
-                    cbSerialList.setVisibleRowCount(Math.min(itemCount, 5));
-
-                    if (data.lastSerial != null && cbSerialList.getItems().contains(data.lastSerial)) {
-                        cbSerialList.getSelectionModel().select((data.lastSerial));
-                    } else if (!cbSerialList.getItems().isEmpty()) {
-                        cbSerialList.getSelectionModel().selectFirst();
-                    }
-                })
-                .handle();
-
-        // 展开下拉框时刷新列表
-        cbSerialList.setOnShowing(event -> refreshSerialList());
+        cbSerialList.init(keyLastSerial);
         // 选中串口时自动打开
         cbSerialList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && !newVal.equals(oldVal)) {
@@ -148,40 +123,16 @@ public class SerialSendCtrl implements Initializable {
     private void setupButtonActions() {
         btnSend.setOnAction(e -> sendData());
 
-        btnOpenSerial.setOnAction(e -> {
-            if (comPort != null && comPort.isOpen()) {
-                // 串口已打开 → 关闭
-                closeSerial();
-            } else {
-                // 串口未打开 → 打开
+        btnOpenSerial.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
                 openSelectedSerial();
+            } else {
+                if (comPort != null && comPort.isOpen()) {
+                    // 串口已打开 → 关闭
+                    closeSerial();
+                }
             }
         });
-    }
-
-    private void refreshSerialList() {
-        // 刷新前记录当前选中的串口（用于后续恢复）
-        String currentSelected = cbSerialList.getValue();
-
-        new TaskHandler<List<String>>().whenCall(() -> {
-            List<String> serialList = new ArrayList<>();
-            for (SerialPort serialPort : getSerialPorts()) {
-                serialList.add(serialPort.getSystemPortName() + " - " + serialPort.getDescriptivePortName());
-            }
-            return serialList;
-        }).andThen(val -> {
-            LOG.info("读取完成" + val);
-            cbSerialList.getItems().clear();
-            cbSerialList.getItems().addAll(val);
-
-            // 刷新后：如果之前有选中项且仍存在，则恢复选中；否则不自动选中
-            if (currentSelected != null && val.contains(currentSelected)) {
-                cbSerialList.setValue(currentSelected); // 恢复之前的选中项
-            } else {
-                // 首次加载或选中项已消失，可选：不自动选中任何项
-                cbSerialList.getSelectionModel().clearSelection();
-            }
-        }).handle();
     }
 
     /**
@@ -223,11 +174,9 @@ public class SerialSendCtrl implements Initializable {
             LOG.info("串口已打开: " + comPort.getSystemPortName() + " @ " + baudRate);
             ToastQueue.show(AppState.getStage(), "串口已打开: " + comPort.getSystemPortName(), 800);
             ConfigManager.set(keyLastSerial, selectedSerial);
-            btnOpenSerial.setText("关闭串口");
         } else {
             LOG.error("串口打开失败: " + comPort.getSystemPortName());
             ToastQueue.show(AppState.getStage(), "串口打开失败", 800);
-            btnOpenSerial.setText("打开串口");
         }
     }
 
@@ -239,7 +188,6 @@ public class SerialSendCtrl implements Initializable {
             comPort.closePort();
             LOG.info("串口已关闭");
             ToastQueue.show(AppState.getStage(), "串口已关闭", 800);
-            btnOpenSerial.setText("打开串口");
         }
     }
 
@@ -312,6 +260,7 @@ public class SerialSendCtrl implements Initializable {
         }
 
     }
+
     private static List<SerialPort> getSerialPorts() {
         return Arrays.asList(SerialPort.getCommPorts());
     }

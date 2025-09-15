@@ -5,6 +5,7 @@ import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
 import indi.lt.serialtool.ConfigManager;
 import indi.lt.serialtool.component.InlineCssRegexHighlighter;
 import indi.lt.serialtool.component.PromptInlineCssTextArea;
+import indi.lt.serialtool.component.SerialPortCombBox;
 import indi.lt.serialtool.component.SerialToggleButton;
 import indi.lt.serialtool.service.SerialReadService;
 import javafx.fxml.FXML;
@@ -46,7 +47,7 @@ public class SerialReceiveCtrl implements Initializable {
     private Label lbSerialName;
 
     @FXML
-    private ComboBox<String> cbSerialList;
+    private SerialPortCombBox cbSerialList;
 
     @FXML
     private ComboBox<Integer> cbBautRateList;
@@ -179,29 +180,13 @@ public class SerialReceiveCtrl implements Initializable {
 
     public void initSerialComboBoxAction() {
         // 1. 展开下拉框时刷新列表（保留，但刷新逻辑已优化）
-        cbSerialList.setOnShowing(event -> refreshSerialList());
-
+        cbSerialList.init(keyLastSerial);
         cbSerialList.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
             if (null != newVal && null != oldVal) {
                 LOG.debug(oldVal + "->" + newVal);
                 onSerialPortClicked();
             }
         });
-
-        List<String> serialList = new ArrayList<>();
-        for (SerialPort serialPort : getSerialPorts()) {
-            serialList.add(serialPort.getSystemPortName() + " - " + serialPort.getDescriptivePortName());
-        }
-        cbSerialList.getItems().addAll(serialList);
-        cbSerialList.getSelectionModel().selectFirst();
-
-        String lastSerial = ConfigManager.get(keyLastSerial, null);
-        if (lastSerial != null && serialList.contains(lastSerial)) {
-            cbSerialList.setValue(lastSerial);
-            LOG.info("恢复上次串口选择: " + lastSerial);
-        } else if (!serialList.isEmpty()) {
-            cbSerialList.getSelectionModel().selectFirst();
-        }
 
     }
 
@@ -264,35 +249,6 @@ public class SerialReceiveCtrl implements Initializable {
         cbBautRateList.getSelectionModel().select(Integer.valueOf(1500000));
 
         LOG.info("波特率初始化完成：" + cbBautRateList.getItems());
-    }
-
-    private void refreshSerialList() {
-        // 刷新前记录当前选中的串口（用于后续恢复）
-        String currentSelected = cbSerialList.getValue();
-
-        new TaskHandler<List<String>>().whenCall(() -> {
-            List<String> serialList = new ArrayList<>();
-            for (SerialPort serialPort : getSerialPorts()) {
-                serialList.add(serialPort.getSystemPortName() + " - " + serialPort.getDescriptivePortName());
-            }
-            return serialList;
-        }).andThen(val -> {
-            LOG.info("读取完成" + val);
-            cbSerialList.getItems().clear();
-            cbSerialList.getItems().addAll(val);
-
-            // 刷新后：如果之前有选中项且仍存在，则恢复选中；否则不自动选中
-            if (currentSelected != null && val.contains(currentSelected)) {
-                cbSerialList.setValue(currentSelected); // 恢复之前的选中项
-            } else {
-                // 首次加载或选中项已消失，可选：不自动选中任何项
-                cbSerialList.getSelectionModel().clearSelection();
-            }
-        }).handle();
-    }
-
-    private static List<SerialPort> getSerialPorts() {
-        return Arrays.asList(SerialPort.getCommPorts());
     }
 
     public void setSerialName(String serialName) {
