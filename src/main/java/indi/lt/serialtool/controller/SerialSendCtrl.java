@@ -58,9 +58,6 @@ public class SerialSendCtrl implements Initializable {
 
     private final CommandTableView table = new CommandTableView();
 
-    // 当前打开的串口
-    private SerialPort comPort;
-
     // 保存上次串口选择的 key
     private final String keyLastSerial = "sendModeLastSerialPort";
 
@@ -91,11 +88,11 @@ public class SerialSendCtrl implements Initializable {
      */
     private void initSerialComboBox() {
         // 串口下拉框初始化
-        cbSerialList.init(keyLastSerial, cbBautrate.valueProperty());
+        cbSerialList.init(keyLastSerial, cbBautrate.valueProperty(), btnOpenSerial.selectedProperty(),SerialPort.TIMEOUT_WRITE_BLOCKING);
 
         // 选中波特率变化时重新打开串口
         cbBautrate.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (comPort != null && comPort.isOpen()) {
+            if (cbSerialList.getSelectedPort() != null && cbSerialList.getSelectedPort().isOpen()) {
                 cbSerialList.openSelectedSerial();
             }
         });
@@ -121,7 +118,7 @@ public class SerialSendCtrl implements Initializable {
             if (newValue) {
                 cbSerialList.openSelectedSerial();
             } else {
-                if (comPort != null && comPort.isOpen()) {
+                if (cbSerialList.getSelectedPort() != null && cbSerialList.getSelectedPort().isOpen()) {
                     // 串口已打开 → 关闭
                     closeSerial();
                 }
@@ -133,8 +130,8 @@ public class SerialSendCtrl implements Initializable {
      * 关闭串口
      */
     public void closeSerial() {
-        if (comPort != null && comPort.isOpen()) {
-            comPort.closePort();
+        if (cbSerialList.getSelectedPort() != null && cbSerialList.getSelectedPort().isOpen()) {
+            cbSerialList.getSelectedPort().closePort();
             LOG.info("串口已关闭");
             ToastQueue.show(AppState.getStage(), "串口已关闭", 800);
         }
@@ -144,7 +141,7 @@ public class SerialSendCtrl implements Initializable {
      * 发送数据
      */
     private void sendData() {
-        if (comPort == null || !comPort.isOpen()) {
+        if (cbSerialList.getSelectedPort() == null || !cbSerialList.getSelectedPort().isOpen()) {
             ToastQueue.show(AppState.getStage(), "串口未打开", 800);
             return;
         }
@@ -157,7 +154,7 @@ public class SerialSendCtrl implements Initializable {
 
         try {
             byte[] data = cbIsHex.isSelected() ? hexStringToBytes(text.trim()) : text.getBytes();
-            comPort.writeBytes(data, data.length);
+            cbSerialList.getSelectedPort().writeBytes(data, data.length);
             LOG.info("发送成功: " + text);
         } catch (Exception e) {
             LOG.error("发送失败", e);

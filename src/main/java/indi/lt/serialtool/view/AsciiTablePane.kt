@@ -1,239 +1,271 @@
-package indi.lt.serialtool.view;
+package indi.lt.serialtool.view
 
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.geometry.Insets;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleStringProperty
+import javafx.beans.value.ObservableValue
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
+import javafx.collections.transformation.FilteredList
+import javafx.event.EventHandler
+import javafx.geometry.Insets
+import javafx.scene.control.Button
+import javafx.scene.control.TableColumn
+import javafx.scene.control.TableView
+import javafx.scene.control.TextField
+import javafx.scene.control.cell.PropertyValueFactory
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
+import javafx.scene.layout.HBox
+import javafx.scene.layout.VBox
+import java.util.*
+import java.util.function.Predicate
 
-public class AsciiTablePane extends VBox {
+class AsciiTablePane : VBox() {
+    class AsciiEntry(code: Int, character: String?, description: String?) {
+        private val code = SimpleIntegerProperty(code)
+        private val character = SimpleStringProperty(character)
+        private val hex = SimpleStringProperty(String.format("0x%02X", code))
+        private val oct = SimpleStringProperty(String.format("0%03o", code))
+        private val binary = SimpleStringProperty(String.format("%8s", Integer.toBinaryString(code)).replace(' ', '0'))
+        private val description = SimpleStringProperty(description)
 
-    public static class AsciiEntry {
-        private final SimpleIntegerProperty code;
-        private final SimpleStringProperty character;
-        private final SimpleStringProperty hex;
-        private final SimpleStringProperty oct;
-        private final SimpleStringProperty binary;
-        private final SimpleStringProperty description;
-
-        public AsciiEntry(int code, String character, String description) {
-            this.code = new SimpleIntegerProperty(code);
-            this.character = new SimpleStringProperty(character);
-            this.hex = new SimpleStringProperty(String.format("0x%02X", code));
-            this.oct = new SimpleStringProperty(String.format("0%03o", code));
-            this.binary = new SimpleStringProperty(String.format("%8s", Integer.toBinaryString(code)).replace(' ', '0'));
-            this.description = new SimpleStringProperty(description);
+        fun getCode(): Int {
+            return code.get()
         }
 
-        public int getCode() { return code.get(); }
-        public String getCharacter() { return character.get(); }
-        public String getHex() { return hex.get(); }
-        public String getOct() { return oct.get(); }
-        public String getBinary() { return binary.get(); }
-        public String getDescription() { return description.get(); }
+        fun getCharacter(): String {
+            return character.get()
+        }
+
+        fun getHex(): String {
+            return hex.get()
+        }
+
+        fun getOct(): String {
+            return oct.get()
+        }
+
+        fun getBinary(): String {
+            return binary.get()
+        }
+
+        fun getDescription(): String {
+            return description.get()
+        }
     }
 
-    private final TableView<AsciiEntry> table;
-    private final TextField searchField;
-    private final Button clearBtn;
+    val tableView: TableView<AsciiEntry>
+    private val searchField: TextField
+    private val clearBtn: Button
 
-    public AsciiTablePane() {
-        setSpacing(8);
-        setPadding(new Insets(10));
+    init {
+        spacing = 8.0
+        padding = Insets(10.0)
 
-        ObservableList<AsciiEntry> fullList = buildAsciiList();
-        FilteredList<AsciiEntry> filtered = new FilteredList<>(fullList, p -> true);
+        val fullList = buildAsciiList()
+        val filtered = FilteredList(fullList) { p: AsciiEntry? -> true }
 
         // --- 表格 ---
-        table = new TableView<>(filtered);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableView = TableView(filtered)
+        tableView.columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY
 
-        TableColumn<AsciiEntry, Integer> colDec = new TableColumn<>("十进制");
-        colDec.setCellValueFactory(new PropertyValueFactory<>("code"));
-        colDec.setMaxWidth(80);
+        val colDec = TableColumn<AsciiEntry, Int>("十进制")
+        colDec.cellValueFactory = PropertyValueFactory("code")
+        colDec.maxWidth = 80.0
 
-        TableColumn<AsciiEntry, String> colChar = new TableColumn<>("字符");
-        colChar.setCellValueFactory(new PropertyValueFactory<>("character"));
-        colChar.setMinWidth(80);
+        val colChar = TableColumn<AsciiEntry, String>("字符")
+        colChar.cellValueFactory = PropertyValueFactory("character")
+        colChar.minWidth = 80.0
 
-        TableColumn<AsciiEntry, String> colHex = new TableColumn<>("十六进制");
-        colHex.setCellValueFactory(new PropertyValueFactory<>("hex"));
-        colHex.setMaxWidth(90);
+        val colHex = TableColumn<AsciiEntry, String>("十六进制")
+        colHex.cellValueFactory = PropertyValueFactory("hex")
+        colHex.maxWidth = 90.0
 
-        TableColumn<AsciiEntry, String> colOct = new TableColumn<>("八进制");
-        colOct.setCellValueFactory(new PropertyValueFactory<>("oct"));
-        colOct.setMaxWidth(90);
+        val colOct = TableColumn<AsciiEntry, String>("八进制")
+        colOct.cellValueFactory = PropertyValueFactory("oct")
+        colOct.maxWidth = 90.0
 
-        TableColumn<AsciiEntry, String> colBin = new TableColumn<>("二进制");
-        colBin.setCellValueFactory(new PropertyValueFactory<>("binary"));
-        colBin.setMinWidth(120);
+        val colBin = TableColumn<AsciiEntry, String>("二进制")
+        colBin.cellValueFactory = PropertyValueFactory("binary")
+        colBin.minWidth = 120.0
 
-        TableColumn<AsciiEntry, String> colDesc = new TableColumn<>("备注");
-        colDesc.setCellValueFactory(new PropertyValueFactory<>("description"));
-        colDesc.setMinWidth(150);
+        val colDesc = TableColumn<AsciiEntry, String>("备注")
+        colDesc.cellValueFactory = PropertyValueFactory("description")
+        colDesc.minWidth = 150.0
 
-        table.getColumns().addAll(colDec, colChar, colHex, colOct, colBin, colDesc);
+        tableView.columns.addAll(colDec, colChar, colHex, colOct, colBin, colDesc)
 
 
         // --- 搜索控件 ---
-        searchField = new TextField();
-        searchField.setPromptText("输入字符或编码 (如 A, 65, 0x41, 41h)");
-        clearBtn = new Button("清除");
-        HBox controls = new HBox(8, searchField, clearBtn);
+        searchField = TextField()
+        searchField.promptText = "输入字符或编码 (如 A, 65, 0x41, 41h)"
+        clearBtn = Button("清除")
+        val controls = HBox(8.0, searchField, clearBtn)
 
-        getChildren().addAll(controls, table);
+        children.addAll(controls, tableView)
 
         // --- 搜索逻辑 ---
-        Runnable doFilter = () -> {
-            String raw = searchField.getText();
-            if (raw == null || raw.trim().isEmpty()) {
-                filtered.setPredicate(p -> true);
-                return;
+        val doFilter = Runnable {
+            val raw = searchField.text
+            if (raw == null || raw.trim { it <= ' ' }.isEmpty()) {
+                filtered.predicate = Predicate { p: AsciiEntry? -> true }
+                return@Runnable
             }
-            String s = raw.trim();
-
+            val s = raw.trim { it <= ' ' }
             try {
-                if (s.length() == 1) {
-                    char c = s.charAt(0);
-                    filtered.setPredicate(entry -> entry.getCode() == c);
-                    return;
+                if (s.length == 1) {
+                    val c = s[0]
+                    filtered.predicate = Predicate { entry: AsciiEntry -> entry.getCode() == c.code }
+                    return@Runnable
                 }
-                if (s.matches("^0x[0-9a-fA-F]+$")) {
-                    int val = Integer.parseInt(s.substring(2), 16);
-                    filtered.setPredicate(entry -> entry.getCode() == val);
-                    return;
+                if (s.matches("^0x[0-9a-fA-F]+$".toRegex())) {
+                    val `val` = s.substring(2).toInt(16)
+                    filtered.predicate = Predicate { entry: AsciiEntry -> entry.getCode() == `val` }
+                    return@Runnable
                 }
-                if (s.matches("^[0-9]+$")) {
-                    int val = Integer.parseInt(s);
-                    filtered.setPredicate(entry -> entry.getCode() == val);
-                    return;
+                if (s.matches("^[0-9]+$".toRegex())) {
+                    val `val` = s.toInt()
+                    filtered.predicate = Predicate { entry: AsciiEntry -> entry.getCode() == `val` }
+                    return@Runnable
                 }
-                if (s.matches("^[0-9a-fA-F]+[hH]$")) {
-                    int val = Integer.parseInt(s.substring(0, s.length() - 1), 16);
-                    filtered.setPredicate(entry -> entry.getCode() == val);
-                    return;
+                if (s.matches("^[0-9a-fA-F]+[hH]$".toRegex())) {
+                    val `val` = s.substring(0, s.length - 1).toInt(16)
+                    filtered.predicate = Predicate { entry: AsciiEntry -> entry.getCode() == `val` }
+                    return@Runnable
                 }
 
-                String low = s.toLowerCase();
-                filtered.setPredicate(entry ->
-                        entry.getCharacter().toLowerCase().contains(low) ||
-                                entry.getHex().toLowerCase().contains(low) ||
-                                entry.getOct().toLowerCase().contains(low) ||
-                                entry.getDescription().toLowerCase().contains(low) ||
-                                String.valueOf(entry.getCode()).contains(low)
-                );
-
-            } catch (NumberFormatException ex) {
-                String low = s.toLowerCase();
-                filtered.setPredicate(entry ->
-                        entry.getCharacter().toLowerCase().contains(low) ||
-                                entry.getHex().toLowerCase().contains(low) ||
-                                entry.getOct().toLowerCase().contains(low) ||
-                                entry.getDescription().toLowerCase().contains(low) ||
-                                String.valueOf(entry.getCode()).contains(low)
-                );
+                val low = s.lowercase(Locale.getDefault())
+                filtered.setPredicate { entry: AsciiEntry ->
+                    entry.getCharacter().lowercase(Locale.getDefault()).contains(low) ||
+                            entry.getHex().lowercase(Locale.getDefault()).contains(low) ||
+                            entry.getOct().lowercase(Locale.getDefault()).contains(low) ||
+                            entry.getDescription().lowercase(Locale.getDefault()).contains(low) ||
+                            entry.getCode().toString().contains(low)
+                }
+            } catch (ex: NumberFormatException) {
+                val low = s.lowercase(Locale.getDefault())
+                filtered.setPredicate { entry: AsciiEntry ->
+                    entry.getCharacter().lowercase(Locale.getDefault()).contains(low) ||
+                            entry.getHex().lowercase(Locale.getDefault()).contains(low) ||
+                            entry.getOct().lowercase(Locale.getDefault()).contains(low) ||
+                            entry.getDescription().lowercase(Locale.getDefault()).contains(low) ||
+                            entry.getCode().toString().contains(low)
+                }
             }
-        };
+        }
 
-        searchField.setOnKeyPressed(ev -> {
-            if (ev.getCode() == KeyCode.ENTER) doFilter.run();
-        });
-        searchField.textProperty().addListener((obs, oldV, newV) -> doFilter.run());
-        clearBtn.setOnAction(e -> {
-            searchField.clear();
-            filtered.setPredicate(p -> true);
-        });
+        searchField.onKeyPressed = EventHandler { ev: KeyEvent ->
+            if (ev.code == KeyCode.ENTER) doFilter.run()
+        }
+        searchField.textProperty()
+            .addListener { _: ObservableValue<out String?>?, _: String?, _: String? -> doFilter.run() }
+        clearBtn.onAction = EventHandler {
+            searchField.clear()
+            filtered.setPredicate { true }
+        }
     }
 
-    private ObservableList<AsciiEntry> buildAsciiList() {
-        ObservableList<AsciiEntry> list = FXCollections.observableArrayList();
+    private fun buildAsciiList(): ObservableList<AsciiEntry> {
+        val list = FXCollections.observableArrayList<AsciiEntry>()
 
         // 控制字符说明
-        String[][] controlChars = {
-                {"NUL","Null"},{"SOH","Start of Header"},{"STX","Start of Text"},{"ETX","End of Text"},
-                {"EOT","End of Transmission"},{"ENQ","Enquiry"},{"ACK","Acknowledge"},{"BEL","Bell"},
-                {"BS","Backspace"},{"TAB","Horizontal Tab"},{"LF","Line Feed"},{"VT","Vertical Tab"},
-                {"FF","Form Feed"},{"CR","Carriage Return"},{"SO","Shift Out"},{"SI","Shift In"},
-                {"DLE","Data Link Escape"},{"DC1","Device Control 1"},{"DC2","Device Control 2"},{"DC3","Device Control 3"},
-                {"DC4","Device Control 4"},{"NAK","Negative Ack"},{"SYN","Synchronous Idle"},{"ETB","End of Block"},
-                {"CAN","Cancel"},{"EM","End of Medium"},{"SUB","Substitute"},{"ESC","Escape"},
-                {"FS","File Separator"},{"GS","Group Separator"},{"RS","Record Separator"},{"US","Unit Separator"},
-                {"DEL","Delete"}
-        };
+        val controlChars = arrayOf(
+            arrayOf("NUL", "Null"),
+            arrayOf("SOH", "Start of Header"),
+            arrayOf("STX", "Start of Text"),
+            arrayOf("ETX", "End of Text"),
+            arrayOf("EOT", "End of Transmission"),
+            arrayOf("ENQ", "Enquiry"),
+            arrayOf("ACK", "Acknowledge"),
+            arrayOf("BEL", "Bell"),
+            arrayOf("BS", "Backspace"),
+            arrayOf("TAB", "Horizontal Tab"),
+            arrayOf("LF", "Line Feed"),
+            arrayOf("VT", "Vertical Tab"),
+            arrayOf("FF", "Form Feed"),
+            arrayOf("CR", "Carriage Return"),
+            arrayOf("SO", "Shift Out"),
+            arrayOf("SI", "Shift In"),
+            arrayOf("DLE", "Data Link Escape"),
+            arrayOf("DC1", "Device Control 1"),
+            arrayOf("DC2", "Device Control 2"),
+            arrayOf("DC3", "Device Control 3"),
+            arrayOf("DC4", "Device Control 4"),
+            arrayOf("NAK", "Negative Ack"),
+            arrayOf("SYN", "Synchronous Idle"),
+            arrayOf("ETB", "End of Block"),
+            arrayOf("CAN", "Cancel"),
+            arrayOf("EM", "End of Medium"),
+            arrayOf("SUB", "Substitute"),
+            arrayOf("ESC", "Escape"),
+            arrayOf("FS", "File Separator"),
+            arrayOf("GS", "Group Separator"),
+            arrayOf("RS", "Record Separator"),
+            arrayOf("US", "Unit Separator"),
+            arrayOf("DEL", "Delete")
+        )
 
         // 0–31 控制符
-        for (int i = 0; i < 32; i++) {
-            list.add(new AsciiEntry(i, controlChars[i][0], controlChars[i][1]));
+        for (i in 0..31) {
+            list.add(AsciiEntry(i, controlChars[i][0], controlChars[i][1]))
         }
 
         // 32 空格
-        list.add(new AsciiEntry(32, "SP", "Space (空格)"));
+        list.add(AsciiEntry(32, "SP", "Space (空格)"))
 
         // 33–126 可打印字符
-        for (int i = 33; i < 127; i++) {
-            char c = (char) i;
-            String remark;
-            if (Character.isUpperCase(c)) {
-                remark = "大写字母 " + c;
+        for (i in 33..126) {
+            val c = i.toChar()
+            val remark = if (Character.isUpperCase(c)) {
+                "大写字母 $c"
             } else if (Character.isLowerCase(c)) {
-                remark = "小写字母 " + c;
+                "小写字母 $c"
             } else if (Character.isDigit(c)) {
-                remark = "数字 " + c;
+                "数字 $c"
             } else {
                 // 标点符号描述
-                remark = switch (c) {
-                    case '!' -> "感叹号";
-                    case '"' -> "双引号";
-                    case '#' -> "井号 / 井字符";
-                    case '$' -> "美元符号";
-                    case '%' -> "百分号";
-                    case '&' -> "和号 (Ampersand)";
-                    case '\'' -> "单引号";
-                    case '(' -> "左括号";
-                    case ')' -> "右括号";
-                    case '*' -> "星号";
-                    case '+' -> "加号";
-                    case ',' -> "逗号";
-                    case '-' -> "减号 / 连字符";
-                    case '.' -> "句号 / 点";
-                    case '/' -> "斜杠";
-                    case ':' -> "冒号";
-                    case ';' -> "分号";
-                    case '<' -> "小于号";
-                    case '=' -> "等号";
-                    case '>' -> "大于号";
-                    case '?' -> "问号";
-                    case '@' -> "艾特符号";
-                    case '[' -> "左方括号";
-                    case '\\' -> "反斜杠";
-                    case ']' -> "右方括号";
-                    case '^' -> "脱字符 (Caret)";
-                    case '_' -> "下划线";
-                    case '`' -> "反引号";
-                    case '{' -> "左花括号";
-                    case '|' -> "竖线";
-                    case '}' -> "右花括号";
-                    case '~' -> "波浪号";
-                    default -> "符号 " + c;
-                };
+                when (c) {
+                    '!' -> "感叹号"
+                    '"' -> "双引号"
+                    '#' -> "井号 / 井字符"
+                    '$' -> "美元符号"
+                    '%' -> "百分号"
+                    '&' -> "和号 (Ampersand)"
+                    '\'' -> "单引号"
+                    '(' -> "左括号"
+                    ')' -> "右括号"
+                    '*' -> "星号"
+                    '+' -> "加号"
+                    ',' -> "逗号"
+                    '-' -> "减号 / 连字符"
+                    '.' -> "句号 / 点"
+                    '/' -> "斜杠"
+                    ':' -> "冒号"
+                    ';' -> "分号"
+                    '<' -> "小于号"
+                    '=' -> "等号"
+                    '>' -> "大于号"
+                    '?' -> "问号"
+                    '@' -> "艾特符号"
+                    '[' -> "左方括号"
+                    '\\' -> "反斜杠"
+                    ']' -> "右方括号"
+                    '^' -> "脱字符 (Caret)"
+                    '_' -> "下划线"
+                    '`' -> "反引号"
+                    '{' -> "左花括号"
+                    '|' -> "竖线"
+                    '}' -> "右花括号"
+                    '~' -> "波浪号"
+                    else -> "符号 $c"
+                }
             }
-            list.add(new AsciiEntry(i, Character.toString(c), remark));
+            list.add(AsciiEntry(i, c.toString(), remark))
         }
 
         // 127 DEL
-        list.add(new AsciiEntry(127, controlChars[32][0], controlChars[32][1]));
+        list.add(AsciiEntry(127, controlChars[32][0], controlChars[32][1]))
 
-        return list;
-    }
-
-
-    public TableView<AsciiEntry> getTableView() {
-        return table;
+        return list
     }
 }
