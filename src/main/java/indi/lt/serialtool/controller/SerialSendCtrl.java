@@ -73,7 +73,7 @@ public class SerialSendCtrl implements Initializable {
         setupButtonActions();
 
         // 启动时默认打开第一个串口
-        openSelectedSerial();
+        cbSerialList.openSelectedSerial();
     }
 
     /**
@@ -91,18 +91,12 @@ public class SerialSendCtrl implements Initializable {
      */
     private void initSerialComboBox() {
         // 串口下拉框初始化
-        cbSerialList.init(keyLastSerial);
-        // 选中串口时自动打开
-        cbSerialList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && !newVal.equals(oldVal)) {
-                openSelectedSerial();
-            }
-        });
+        cbSerialList.init(keyLastSerial, cbBautrate.valueProperty());
 
         // 选中波特率变化时重新打开串口
         cbBautrate.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (comPort != null && comPort.isOpen()) {
-                openSelectedSerial();
+                cbSerialList.openSelectedSerial();
             }
         });
     }
@@ -125,7 +119,7 @@ public class SerialSendCtrl implements Initializable {
 
         btnOpenSerial.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                openSelectedSerial();
+                cbSerialList.openSelectedSerial();
             } else {
                 if (comPort != null && comPort.isOpen()) {
                     // 串口已打开 → 关闭
@@ -133,51 +127,6 @@ public class SerialSendCtrl implements Initializable {
                 }
             }
         });
-    }
-
-    /**
-     * 打开用户选择的串口
-     */
-    private void openSelectedSerial() {
-        if (cbSerialList.getItems().isEmpty()) {
-            LOG.warn("串口列表为空，无法打开串口");
-            ToastQueue.show(AppState.getStage(), "未检测到串口设备", 800);
-            return;
-        }
-
-        String selectedSerial = cbSerialList.getValue();
-        if (selectedSerial == null || selectedSerial.isEmpty()) {
-            selectedSerial = cbSerialList.getItems().get(0);
-            cbSerialList.setValue(selectedSerial);
-        }
-
-        SerialPort[] ports = SerialPort.getCommPorts();
-        int index = cbSerialList.getSelectionModel().getSelectedIndex();
-        if (index < 0 || index >= ports.length) {
-            LOG.warn("串口索引超出范围");
-            return;
-        }
-
-        // 关闭已有串口
-        if (comPort != null && comPort.isOpen()) {
-            comPort.closePort();
-            LOG.info("关闭旧串口");
-        }
-
-        comPort = ports[index];
-
-        int baudRate = cbBautrate.getValue() != null ? cbBautrate.getValue() : 115200;
-        comPort.setComPortParameters(baudRate, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-        comPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
-
-        if (comPort.openPort()) {
-            LOG.info("串口已打开: " + comPort.getSystemPortName() + " @ " + baudRate);
-            ToastQueue.show(AppState.getStage(), "串口已打开: " + comPort.getSystemPortName(), 800);
-            ConfigManager.set(keyLastSerial, selectedSerial);
-        } else {
-            LOG.error("串口打开失败: " + comPort.getSystemPortName());
-            ToastQueue.show(AppState.getStage(), "串口打开失败", 800);
-        }
     }
 
     /**
@@ -249,20 +198,4 @@ public class SerialSendCtrl implements Initializable {
         }
         return result;
     }
-
-    static class SerialPortData {
-        private SerialPort[] serialPorts;
-        private String lastSerial;
-
-        public SerialPortData(SerialPort[] serialPorts, String lastSerial) {
-            this.serialPorts = serialPorts;
-            this.lastSerial = lastSerial;
-        }
-
-    }
-
-    private static List<SerialPort> getSerialPorts() {
-        return Arrays.asList(SerialPort.getCommPorts());
-    }
-
 }

@@ -66,8 +66,6 @@ public class SerialReceiveCtrl implements Initializable {
 
     private SerialReadService serialReadService;
 
-    private SerialPort comPort;
-
     private InlineCssRegexHighlighter highlighter;
 
     private String keyLastSerial;
@@ -76,6 +74,14 @@ public class SerialReceiveCtrl implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initBautRateList();
         registerSerialEvent();
+
+        highlighter = new InlineCssRegexHighlighter(textAreaOrigin);
+        highlighter.patternTextProperty().bind(tfKeyWord.textProperty());
+        // 创建并启动Service
+        this.serialReadService = new SerialReadService(cbSerialList.getSelectedPort(), textAreaOrigin,
+                cbTimeDisplay,
+                () -> highlighter.schedule());
+        serialReadService.start();
     }
 
     private void registerSerialEvent() {
@@ -138,49 +144,9 @@ public class SerialReceiveCtrl implements Initializable {
         //textAreaOrigin.getArea().clear();
     }
 
-
-    private void openSelectSerial(ComboBox<String> f_cbSerialList, ComboBox<Integer> f_cbBautRateList) {
-        int selectedIndex = f_cbSerialList.getSelectionModel().getSelectedIndex();
-        if (selectedIndex < 0) {
-            LOG.info("请先选择一个串口设备");
-            return;
-        }
-
-        SerialPort[] ports = SerialPort.getCommPorts();
-        if (ports.length == 0) {
-            LOG.info("未检测到串口设备");
-            return;
-        }
-        //        Integer bautrate = cbBautRateList.getSelectionModel().getSelectedItem();
-        int bautrate = Integer.parseInt(String.valueOf(f_cbBautRateList.getSelectionModel().getSelectedItem()));
-        LOG.info("此时的波特率:" + bautrate);
-
-        comPort = ports[selectedIndex];
-        try {
-            comPort.setComPortParameters(bautrate, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
-            comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
-        } catch (Exception e) {
-            LOG.error("设置波特率时发生异常", e);
-            return;
-        }
-
-        if (!comPort.openPort()) {
-            LOG.error("串口打开失败");
-            return;
-        }
-
-        highlighter = new InlineCssRegexHighlighter(textAreaOrigin);
-        highlighter.patternTextProperty().bind(tfKeyWord.textProperty());
-        // 创建并启动Service
-        this.serialReadService = new SerialReadService(comPort, textAreaOrigin,
-                cbTimeDisplay,
-                () -> highlighter.schedule());
-        serialReadService.start();
-    }
-
     public void initSerialComboBoxAction() {
         // 1. 展开下拉框时刷新列表（保留，但刷新逻辑已优化）
-        cbSerialList.init(keyLastSerial);
+        cbSerialList.init(keyLastSerial, cbBautRateList.valueProperty());
         cbSerialList.getSelectionModel().selectedItemProperty().addListener((observableValue, oldVal, newVal) -> {
             if (null != newVal && null != oldVal) {
                 LOG.debug(oldVal + "->" + newVal);
@@ -200,14 +166,14 @@ public class SerialReceiveCtrl implements Initializable {
             return;
         }
         closeSelectSerial();
-        openSelectSerial(cbSerialList, cbBautRateList);
+        cbSerialList.openSelectedSerial();
     }
 
 
     private void initOpenSerialButtonAction() {
         btnOpenSerial.selectedProperty().addListener((observableValue, oldVal, newVal) -> {
             if (newVal) {
-                openSelectSerial(cbSerialList, cbBautRateList);
+                cbSerialList.openSelectedSerial();
             } else {
                 closeSelectSerial();
             }
@@ -222,16 +188,12 @@ public class SerialReceiveCtrl implements Initializable {
     }
 
     private void onBaudRateChanged() {
-        if (comPort != null && comPort.isOpen()) {
-            closeSelectSerial();
-            openSelectSerial(cbSerialList, cbBautRateList);
-        }
+        closeSelectSerial();
+        cbSerialList.openSelectedSerial();
     }
 
     private void closeSelectSerial() {
-        if (null != comPort) {
-            comPort.closePort();
-        }
+        cbSerialList.closeSelectSerial();
         if (null != serialReadService) {
             serialReadService.cancel();
         }
