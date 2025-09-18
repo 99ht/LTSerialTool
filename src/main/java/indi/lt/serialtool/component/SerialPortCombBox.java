@@ -44,7 +44,7 @@ public class SerialPortCombBox extends ComboBox<String> {
     /**
      * 启用状态，启用状态下，切换串口会自动关闭上一个，并打开下一个串口
      */
-    private final SimpleBooleanProperty activeProperty = new SimpleBooleanProperty();
+    private final SimpleBooleanProperty activeProperty = new SimpleBooleanProperty(false);
 
     private int timeOutMode;
 
@@ -222,6 +222,18 @@ public class SerialPortCombBox extends ComboBox<String> {
                 ToastQueue.show(AppState.getStage(), "串口打开失败", 800);
             }
         }).handle();
+    }
+
+    public boolean isActive() {
+        return activeProperty.get();
+    }
+
+    public SimpleBooleanProperty activePropertyProperty() {
+        return activeProperty;
+    }
+
+    public void setActiveProperty(boolean activeProperty) {
+        this.activeProperty.set(activeProperty);
     }
 
     private int getBaudRate() {

@@ -156,12 +156,18 @@ class SerialReceiveCtrl : Initializable {
     }
 
     private fun initBautRateComboBoxAction() {
+        if (!cbBautRateList.items.isEmpty()) {
+            cbBautRateList.selectionModel.selectFirst()
+        }
         cbBautRateList.selectionModel.selectedItemProperty().addListener { _: Observable? ->
             onBaudRateChanged()
         }
     }
 
     private fun onBaudRateChanged() {
+        if (!cbSerialList.isActive) {
+            return
+        }
         closeSelectSerial()
         cbSerialList.openSelectedSerial()
     }

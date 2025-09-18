@@ -12,11 +12,11 @@
               <HBox alignment="CENTER_LEFT" spacing="10.0">
                   <children>
                       <Label fx:id="lbSerialName" minWidth="40.0" text="串口1:" />
-                      <SerialPortCombBox fx:id="cbSerialList" prefWidth="200.0" />
+                      <SerialPortCombBox fx:id="cbSerialList" minWidth="200.0" prefWidth="200.0" />
                       <SerialToggleButton fx:id="btnOpenSerial" minWidth="60.0" mnemonicParsing="false" text="打开" />
                       <Label maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
                       <Label minWidth="42.0" text="波特率:" />
-                      <ComboBox fx:id="cbBautRateList" editable="true" prefWidth="150.0" />
+                      <ComboBox fx:id="cbBautRateList" editable="true" minWidth="80.0" prefWidth="150.0" />
                       <Button minWidth="80.0" mnemonicParsing="false" text="更多设置" />
                   </children>
               </HBox>
