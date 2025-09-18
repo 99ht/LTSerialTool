@@ -37,6 +37,9 @@ public class SerialSendCtrl implements Initializable {
     private final Logger LOG = LogManager.getLogger(SerialSendCtrl.class);
 
     @FXML
+    public CheckBox lineBreak;
+
+    @FXML
     private TextField tfRemark;
     @FXML
     private TextField tfCommand;
@@ -151,6 +154,7 @@ public class SerialSendCtrl implements Initializable {
             ToastQueue.show(AppState.getStage(), "发送内容不能为空", 800);
             return;
         }
+        text = text + "\n";
 
         try {
             byte[] data = cbIsHex.isSelected() ? hexStringToBytes(text.trim()) : text.getBytes();

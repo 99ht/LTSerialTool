@@ -1,8 +1,6 @@
 package indi.lt.serialtool.controller
 
 import com.fazecast.jSerialComm.SerialPort
-import github.nonoas.jfx.flat.ui.concurrent.TaskHandler
-import indi.lt.serialtool.ConfigManager
 import indi.lt.serialtool.component.InlineCssRegexHighlighter
 import indi.lt.serialtool.component.PromptInlineCssTextArea
 import indi.lt.serialtool.component.SerialPortCombBox

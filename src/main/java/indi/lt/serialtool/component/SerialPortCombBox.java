@@ -8,6 +8,7 @@ import indi.lt.serialtool.ConfigManager;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ComboBox;
 import org.apache.logging.log4j.LogManager;
@@ -36,7 +37,7 @@ public class SerialPortCombBox extends ComboBox<String> {
 
     private String keyLastSerial;
 
-    private final ObjectProperty<Object> baudRateProperty = new SimpleObjectProperty<>();
+    private final SimpleIntegerProperty baudRateProperty = new SimpleIntegerProperty();
 
     private Runnable onOpenSucceed;
     private Runnable onOpenFailed;
@@ -125,7 +126,7 @@ public class SerialPortCombBox extends ComboBox<String> {
             }
             return serialList;
         }).andThen(val -> {
-            LOG.info("读取完成" + val);
+            LOG.debug("读取完成" + val);
             getItems().clear();
             getItems().addAll(val);
 

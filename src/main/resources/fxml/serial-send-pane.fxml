@@ -69,7 +69,7 @@
                                                   text="HEX显示" VBox.vgrow="ALWAYS"/>
                                         <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false"
                                                   text="HEX发送" VBox.vgrow="ALWAYS"/>
-                                        <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false"
+                                        <CheckBox fx:id="lineBreak" maxHeight="1.7976931348623157E308" mnemonicParsing="false"
                                                   text="自动换行" VBox.vgrow="ALWAYS"/>
                                         <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false"
                                                   text="时间戳显示" VBox.vgrow="ALWAYS"/>

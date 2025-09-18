@@ -14,7 +14,7 @@ import java.util.Collections;
  */
 public class BaseStage extends AppStage {
 
-    protected final String TITLE = "WorkTools";
+    protected final String TITLE = "LTSerialTool-v2.16.0";
 
     public BaseStage() {
         setTitle(TITLE);
