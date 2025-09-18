@@ -151,6 +151,7 @@ class SerialReceiveCtrl : Initializable {
         }
         cbSerialList.setOnOpenFailed {
             btnOpenSerial.isDisable = false
+            btnOpenSerial.isSelected = false
         }
     }
 
