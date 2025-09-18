@@ -28,10 +28,8 @@
                         <MenuItem mnemonicParsing="false" text="设置显示缓冲区容量"/>
                     </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="主题">
+                <Menu mnemonicParsing="false" text="主题" fx:id="menuTheme">
                     <items>
-                        <RadioMenuItem fx:id="lightTheme" text="亮色"/>
-                        <RadioMenuItem fx:id="darkTheme" text="暗色"/>
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="工具">
@@ -57,9 +55,9 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="帮助">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="关于"/>
-                        <MenuItem mnemonicParsing="false" text="投喂作者"/>
                         <MenuItem mnemonicParsing="false" text="前往官网" onAction="#goToWebsite"/>
+                        <MenuItem mnemonicParsing="false" text="投喂作者"/>
+                        <MenuItem mnemonicParsing="false" text="关于"/>
                     </items>
                 </Menu>
             </menus>

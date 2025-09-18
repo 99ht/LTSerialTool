@@ -1,16 +1,15 @@
 package indi.lt.serialtool.controller;
 
-import github.nonoas.jfx.flat.ui.theme.DarkTheme;
-import github.nonoas.jfx.flat.ui.theme.LightTheme;
+import github.nonoas.jfx.flat.ui.theme.Theme;
 import indi.lt.serialtool.SerialApplication;
+import indi.lt.serialtool.global.ThemeManager;
 import indi.lt.serialtool.view.AsciiStage;
-import indi.lt.serialtool.view.AsciiTablePane;
-import indi.lt.serialtool.view.BaseStage;
 import indi.lt.serialtool.view.SerialReceivePane;
 import indi.lt.serialtool.view.SerialSendPane;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SplitPane;
@@ -29,9 +28,7 @@ public class SerialController implements Initializable {
 
     private final Logger LOG = LogManager.getLogger(SerialController.class);
 
-    public RadioMenuItem lightTheme;
-
-    public RadioMenuItem darkTheme;
+    public Menu menuTheme;
 
     @FXML
     private BorderPane rootPane;
@@ -56,18 +53,19 @@ public class SerialController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // 创建 ToggleGroup
-        themeGroup = new ToggleGroup();
-        lightTheme.setToggleGroup(themeGroup);
-        darkTheme.setToggleGroup(themeGroup);
+        ToggleGroup themeGroup = new ToggleGroup();
+        for (Theme theme : ThemeManager.getAll()) {
+            RadioMenuItem radioMenuItem = new RadioMenuItem(theme.getName());
+            radioMenuItem.setUserData(theme);
+            radioMenuItem.setToggleGroup(themeGroup);
+            menuTheme.getItems().add(radioMenuItem);
+        }
+
         // 监听选项变化
         themeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                RadioMenuItem selected = (RadioMenuItem) newVal;
-                if (selected == lightTheme) {
-                    SerialApplication.setUserAgentStylesheet(new LightTheme().getUserAgentStylesheet());
-                } else {
-                    SerialApplication.setUserAgentStylesheet(new DarkTheme().getUserAgentStylesheet());
-                }
+                Theme theme = (Theme) newVal.getUserData();
+                SerialApplication.setUserAgentStylesheet(theme.getUserAgentStylesheet());
             }
         });
 
