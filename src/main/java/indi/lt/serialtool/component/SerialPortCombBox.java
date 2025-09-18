@@ -239,7 +239,7 @@ public class SerialPortCombBox extends ComboBox<String> {
 
     private int getBaudRate() {
         Object value = baudRateProperty.getValue();
-        if (!(value instanceof Integer)) {
+        if (value == null) {
             return 115200;
         }
         return (int) value;
