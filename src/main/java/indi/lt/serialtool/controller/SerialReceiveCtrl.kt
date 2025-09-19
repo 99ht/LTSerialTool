@@ -124,7 +124,7 @@ class SerialReceiveCtrl : Initializable {
 
     fun initSerialComboBoxAction() {
         cbSerialList.init(
-            keyLastSerial, { cbBautRateList.value }, btnOpenSerial.selectedProperty(),
+            keyLastSerial!!, { cbBautRateList.value }, btnOpenSerial.selectedProperty(),
             SerialPort.TIMEOUT_READ_SEMI_BLOCKING
         )
     }
