@@ -20,6 +20,7 @@ import java.io.FileWriter
 import java.io.IOException
 import java.net.URL
 import java.util.*
+import java.util.function.Supplier
 
 /**
  * 接收模式逻辑
@@ -123,7 +124,7 @@ class SerialReceiveCtrl : Initializable {
 
     fun initSerialComboBoxAction() {
         cbSerialList.init(
-            keyLastSerial, cbBautRateList.valueProperty(), btnOpenSerial.selectedProperty(),
+            keyLastSerial, { cbBautRateList.value }, btnOpenSerial.selectedProperty(),
             SerialPort.TIMEOUT_READ_SEMI_BLOCKING
         )
     }

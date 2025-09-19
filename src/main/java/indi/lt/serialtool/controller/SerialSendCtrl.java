@@ -87,7 +87,7 @@ public class SerialSendCtrl implements Initializable {
      */
     private void initSerialComboBox() {
         // 串口下拉框初始化
-        cbSerialList.init(keyLastSerial, cbBautrate.valueProperty(), btnOpenSerial.selectedProperty(),SerialPort.TIMEOUT_WRITE_BLOCKING);
+        cbSerialList.init(keyLastSerial, () -> cbBautrate.getValue(), btnOpenSerial.selectedProperty(), SerialPort.TIMEOUT_WRITE_BLOCKING);
 
         // 选中波特率变化时重新打开串口
         cbBautrate.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {

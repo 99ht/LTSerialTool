@@ -6,9 +6,7 @@ import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
 import github.nonoas.jfx.flat.ui.stage.ToastQueue;
 import indi.lt.serialtool.global.ConfigManager;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.ComboBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 /**
  * @author Nonoas
@@ -36,8 +35,6 @@ public class SerialPortCombBox extends ComboBox<String> {
 
     private String keyLastSerial;
 
-    private final SimpleIntegerProperty baudRateProperty = new SimpleIntegerProperty();
-
     private Runnable onOpenSucceed;
     private Runnable onOpenFailed;
 
@@ -45,6 +42,11 @@ public class SerialPortCombBox extends ComboBox<String> {
      * 启用状态，启用状态下，切换串口会自动关闭上一个，并打开下一个串口
      */
     private final SimpleBooleanProperty activeProperty = new SimpleBooleanProperty(false);
+
+    /**
+     * 波特率获取接口
+     */
+    private Supplier<Integer> baudRateSupplier;
 
     private int timeOutMode;
 
@@ -55,17 +57,17 @@ public class SerialPortCombBox extends ComboBox<String> {
      * 初始化串口下拉框
      *
      * @param keyLastSerial    最后一次选中的串口配置 KEY
-     * @param baudRateProperty 波特率绑定值
+     * @param baudRateSupplier 波特率提供方法
      * @param activeProperty   启用状态绑定
      * @param timeOutMode      超时模式
      */
     public void init(String keyLastSerial,
-                     ObjectProperty<Integer> baudRateProperty,
+                     Supplier<Integer> baudRateSupplier,
                      BooleanProperty activeProperty,
                      int timeOutMode) {
         this.timeOutMode = timeOutMode;
         this.keyLastSerial = Objects.requireNonNull(keyLastSerial);
-        this.baudRateProperty.bind(Objects.requireNonNull(baudRateProperty));
+        this.baudRateSupplier = baudRateSupplier;
         this.activeProperty.bind(activeProperty);
 
         // 串口下拉框初始化
@@ -176,8 +178,7 @@ public class SerialPortCombBox extends ComboBox<String> {
                     LOG.info("关闭旧串口");
                 }
                 comPort = ports[index];
-                int baudRate = getBaudRate();
-                comPort.setComPortParameters(baudRate, 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
+                comPort.setComPortParameters(baudRateSupplier.get(), 8, SerialPort.ONE_STOP_BIT, SerialPort.NO_PARITY);
 
                 // 3️⃣ 设置读写超时模式（保持非阻塞或半阻塞都可以）
                 comPort.setComPortTimeouts(timeOutMode, 0, 0);
@@ -188,7 +189,7 @@ public class SerialPortCombBox extends ComboBox<String> {
                 boolean opened = future.get(1000, TimeUnit.MILLISECONDS);;
                 // 5️⃣ 打印结果并保存配置
                 if (opened) {
-                    LOG.info("串口已打开: " + comPort.getSystemPortName() + " @ " + baudRate);
+                    LOG.info("串口已打开: " + comPort.getSystemPortName() + " @ " + baudRateSupplier.get());
                     ConfigManager.set(keyLastSerial, selectedSerialFinal);
                 } else {
                     LOG.error("串口打开失败: " + comPort.getSystemPortName());
@@ -231,14 +232,6 @@ public class SerialPortCombBox extends ComboBox<String> {
 
     public void setActiveProperty(boolean activeProperty) {
         this.activeProperty.set(activeProperty);
-    }
-
-    private int getBaudRate() {
-        Object value = baudRateProperty.getValue();
-        if (value == null) {
-            return 115200;
-        }
-        return (int) value;
     }
 
     public SerialPort getSelectedPort() {
