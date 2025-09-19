@@ -201,4 +201,10 @@ public class SerialReadService extends Service<SerialReadService.LogText> {
             return "[" + timeStamp + "] " + text;
         }
     }
+
+    @Override
+    public void start() {
+        super.start();
+        LOG.debug("串口读取服务开启");
+    }
 }

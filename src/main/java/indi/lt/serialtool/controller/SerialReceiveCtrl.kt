@@ -28,7 +28,7 @@ import java.util.*
  * @since 1.0.0
  */
 class SerialReceiveCtrl : Initializable {
-    private val logger: Logger = LogManager.getLogger(SerialController::class.java)
+    private val logger: Logger = LogManager.getLogger(MainController::class.java)
 
     // === FXML 注入的组件 ===
     @FXML

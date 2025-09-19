@@ -1,4 +1,4 @@
-package indi.lt.serialtool;
+package indi.lt.serialtool.global;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,7 +18,9 @@ public class ConfigManager {
     private static final String CONFIG_DIR = System.getProperty("user.home") + File.separator + ".serialtool";
     private static final String CONFIG_FILE = CONFIG_DIR + File.separator + "config.properties";
 
-    private static Properties props = new Properties();
+    public static final String KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS = "receive.splitPane.dividerPositions";
+
+    private static final Properties props = new Properties();
 
     static {
         load();
@@ -56,5 +58,9 @@ public class ConfigManager {
 
     public static String get(String key, String defaultValue) {
         return props.getProperty(key, defaultValue);
+    }
+
+    public static String get(String key) {
+        return props.getProperty(key);
     }
 }

@@ -2,23 +2,25 @@ package indi.lt.serialtool;
 
 import github.nonoas.jfx.flat.ui.AppState;
 import github.nonoas.jfx.flat.ui.theme.LightTheme;
-import indi.lt.serialtool.controller.SerialController;
-import indi.lt.serialtool.view.BaseStage;
+import indi.lt.serialtool.controller.MainController;
+import indi.lt.serialtool.global.ConfigManager;
 import indi.lt.serialtool.view.MainStage;
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
+import static indi.lt.serialtool.global.ConfigManager.KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS;
+
 public class SerialApplication extends Application {
 
-    private final Logger LOG = LogManager.getLogger(SerialController.class);
+    private final Logger LOG = LogManager.getLogger(MainController.class);
+
+    private MainController controller;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -30,7 +32,7 @@ public class SerialApplication extends Application {
         // 先加载 -> 创建场景图和 Controller 并完成 @FXML 注入
         Parent root = fxmlLoader.load();
         // 再拿 Controller
-        SerialController controller = fxmlLoader.getController();
+        controller = fxmlLoader.getController();
 
         setUserAgentStylesheet(new LightTheme().getUserAgentStylesheet());
 
@@ -42,5 +44,20 @@ public class SerialApplication extends Application {
 
         AppState.setStage(appStage.getStage());
         appStage.show();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        saveLayout();
+    }
+
+    private void saveLayout() {
+        Stage stage = AppState.getStage();
+        ConfigManager.set("window.x", String.valueOf(stage.getX()));
+        ConfigManager.set("window.y", String.valueOf(stage.getY()));
+        ConfigManager.set("window.width", String.valueOf(stage.getWidth()));
+        ConfigManager.set("window.height", String.valueOf(stage.getHeight()));
+        ConfigManager.set("window.isMaximized", String.valueOf(stage.isMaximized()));
+        ConfigManager.set(KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS, String.join(",", controller.getDividePosition()));
     }
 }

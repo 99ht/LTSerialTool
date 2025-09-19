@@ -4,12 +4,11 @@ import com.fazecast.jSerialComm.SerialPort;
 import github.nonoas.jfx.flat.ui.AppState;
 import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
 import github.nonoas.jfx.flat.ui.stage.ToastQueue;
-import indi.lt.serialtool.ConfigManager;
+import indi.lt.serialtool.global.ConfigManager;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ComboBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -145,6 +144,8 @@ public class SerialPortCombBox extends ComboBox<String> {
      */
     public synchronized void openSelectedSerial() {
         new TaskHandler<Boolean>().whenCall(() -> {
+            Future<Boolean> future = null;
+            ExecutorService executor = Executors.newSingleThreadExecutor();
             try {
                 LOG.info("尝试打开" + getValue());
                 if (getItems().isEmpty()) {
@@ -182,22 +183,9 @@ public class SerialPortCombBox extends ComboBox<String> {
                 comPort.setComPortTimeouts(timeOutMode, 0, 0);
 
                 // 4️⃣ 异步打开串口 + 超时控制
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                Future<Boolean> future = executor.submit(() -> comPort.openPort());
+                future = executor.submit(() -> comPort.openPort());
 
-                boolean opened = false;
-                try {
-                    // 设置超时时间，例如 1000ms
-                    opened = future.get(1000, TimeUnit.MILLISECONDS);
-                } catch (TimeoutException e) {
-                    LOG.warn("串口打开超时: " + comPort.getSystemPortName());
-                    future.cancel(true); // 尝试取消
-                } catch (Exception e) {
-                    LOG.error("串口打开异常", e);
-                } finally {
-                    executor.shutdown();
-                }
-
+                boolean opened = future.get(1000, TimeUnit.MILLISECONDS);;
                 // 5️⃣ 打印结果并保存配置
                 if (opened) {
                     LOG.info("串口已打开: " + comPort.getSystemPortName() + " @ " + baudRate);
@@ -206,9 +194,17 @@ public class SerialPortCombBox extends ComboBox<String> {
                     LOG.error("串口打开失败: " + comPort.getSystemPortName());
                 }
                 return opened;
-            } catch (Exception e) {
-                LOG.error(e);
+            } catch (TimeoutException e) {
+                LOG.warn("串口打开超时: " + comPort.getSystemPortName());
+                if (future != null) {
+                    future.cancel(true); // 尝试取消
+                }
                 return false;
+            } catch (Exception e) {
+                LOG.error("串口打开异常", e);
+                return false;
+            } finally {
+                executor.shutdown();
             }
         }).andThen(opened -> {
             if (opened) {
