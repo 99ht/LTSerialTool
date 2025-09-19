@@ -113,8 +113,10 @@ public class SerialSendCtrl implements Initializable {
     private void setupButtonActions() {
         btnSend.setOnAction(e -> sendData());
 
+        cbSerialList.disableProperty().bind(btnOpenSerial.disabledProperty());
         btnOpenSerial.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
+                btnOpenSerial.setDisable(true);
                 cbSerialList.openSelectedSerial();
             } else {
                 if (cbSerialList.getSelectedPort() != null && cbSerialList.getSelectedPort().isOpen()) {
@@ -122,6 +124,12 @@ public class SerialSendCtrl implements Initializable {
                     closeSerial();
                 }
             }
+        });
+
+        cbSerialList.setOnOpenSucceed(() -> btnOpenSerial.setDisable(false));
+        cbSerialList.setOnOpenFailed(() -> {
+            btnOpenSerial.setDisable(false);
+            btnOpenSerial.setSelected(false);
         });
     }
 

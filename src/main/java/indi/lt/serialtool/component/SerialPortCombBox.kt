@@ -8,7 +8,6 @@ import indi.lt.serialtool.global.ConfigManager
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
-import javafx.event.Event
 import javafx.event.EventHandler
 import javafx.scene.control.ComboBox
 import org.apache.logging.log4j.LogManager
@@ -87,7 +86,7 @@ class SerialPortCombBox : ComboBox<String?>() {
                 // 設定一個上限，例如10行
                 visibleRowCount = min(itemCount.toDouble(), 5.0).toInt()
                 if (data.lastSerial != null && items.contains(data.lastSerial)) {
-                    selectionModel.select((data.lastSerial))
+                    selectionModel.select(data.lastSerial)
                 } else if (!items.isEmpty()) {
                     selectionModel.selectFirst()
                 }
@@ -95,7 +94,7 @@ class SerialPortCombBox : ComboBox<String?>() {
             .handle()
 
         // 展开下拉框时刷新列表
-        onShowing = EventHandler { event: Event? -> refreshSerialList() }
+        onShowing = EventHandler { refreshSerialList() }
 
         // 选中串口时自动打开
         selectionModel.selectedItemProperty()
