@@ -2,6 +2,7 @@ package indi.lt.serialtool.view;
 
 import github.nonoas.jfx.flat.ui.control.UIFactory;
 import indi.lt.serialtool.global.ConfigManager;
+import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 import javafx.stage.Stage;
@@ -27,7 +28,7 @@ public class MainStage extends BaseStage {
         stage.setWidth(width);
         stage.setHeight(height);
         if (isMaximized) {
-            setMaximized(true);
+            Platform.runLater(() -> setMaximized(true));
         } else {
             setMinWidth(700);
             setMinHeight(600);
