@@ -95,10 +95,10 @@ public class SerialSendCtrl implements Initializable {
                 VBox.setVgrow(rootPane, Priority.ALWAYS);
                 baseStage.registryDragger(toolBar);
                 baseStage.setContentView(new VBox(toolBar, rootPane));
-                baseStage.getStage().setWidth(rootPane.getWidth());
-                baseStage.getStage().setHeight(rootPane.getHeight() + 40);
+                // baseStage.setSize(rootPane.getWidth(), rootPane.getHeight() + 40);
                 baseStage.show();
             } else {
+                // TODO
                 currStage.close();
             }
         });

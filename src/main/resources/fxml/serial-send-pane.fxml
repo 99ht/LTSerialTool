@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<fx:root dividerPositions="0.6" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="603.0" prefWidth="645.0" type="SplitPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialSendCtrl">
+<fx:root dividerPositions="0.6" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="603.0" prefWidth="852.0" type="SplitPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialSendCtrl">
     <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
             <children>
@@ -21,13 +21,13 @@
                             </children>
                         </HBox>
                         <TextArea prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
-                        <HBox prefHeight="180.0" prefWidth="200.0" spacing="20.0">
+                        <HBox prefHeight="180.0" prefWidth="200.0" spacing="10.0">
                             <children>
-                                <VBox prefHeight="300.0" prefWidth="260.0">
+                                <VBox HBox.hgrow="NEVER">
                                     <children>
                                         <HBox alignment="CENTER_LEFT" prefWidth="250.0" spacing="10.0" VBox.vgrow="NEVER">
                                             <children>
-                                                <Label minWidth="50.0" text="串口：" />
+                                                <Label minWidth="50.0" text="串   口：" />
                                                 <SerialPortCombBox fx:id="cbSerialList" maxWidth="1.7976931348623157E308" prefWidth="150.0" HBox.hgrow="ALWAYS" />
                                             </children>
                                         </HBox>
@@ -41,14 +41,14 @@
                                         <SerialToggleButton fx:id="btnOpenSerial" maxWidth="1.7976931348623157E308" mnemonicParsing="false" selectedText="关闭串口" text="打开串口" unSelectedText="打开串口" />
                                     </children>
                                 </VBox>
-                        <VBox prefHeight="200.0" prefWidth="100.0">
+                        <VBox HBox.hgrow="NEVER">
                            <children>
                                         <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="HEX显示" />
-                              <Region prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                              <Region minWidth="0.0" VBox.vgrow="ALWAYS" />
                                         <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="HEX发送" />
-                              <Region prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                              <Region VBox.vgrow="ALWAYS" />
                                         <CheckBox fx:id="lineBreak" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="自动换行" />
-                              <Region prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                              <Region VBox.vgrow="ALWAYS" />
                                         <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="时间戳显示" />
                            </children>
                         </VBox>
@@ -81,16 +81,13 @@
                     </children>
                 </VBox>
             </children>
-            <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-            </padding>
+         <padding>
+            <Insets right="10.0" />
+         </padding>
         </AnchorPane>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-            <padding>
-                <Insets left="10.0" right="10.0" />
-            </padding>
             <children>
-                <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <children>
                         <HBox alignment="CENTER_LEFT">
                             <children>
@@ -110,6 +107,12 @@
                     </children>
                 </VBox>
             </children>
+         <padding>
+            <Insets left="10.0" />
+         </padding>
         </AnchorPane>
     </items>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
 </fx:root>
