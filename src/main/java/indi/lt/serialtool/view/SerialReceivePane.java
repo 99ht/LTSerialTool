@@ -3,6 +3,7 @@ package indi.lt.serialtool.view;
 import indi.lt.serialtool.controller.SerialReceiveCtrl;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -33,4 +34,6 @@ public class SerialReceivePane extends StackPane {
             throw new RuntimeException(e);
         }
     }
+
+
 }

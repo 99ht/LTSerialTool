@@ -6,6 +6,7 @@ import indi.lt.serialtool.component.PromptInlineCssTextArea
 import indi.lt.serialtool.component.SerialPortCombBox
 import indi.lt.serialtool.component.SerialToggleButton
 import indi.lt.serialtool.service.SerialReadService
+import indi.lt.serialtool.utils.UIUtil
 import javafx.beans.Observable
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
@@ -124,7 +125,9 @@ class SerialReceiveCtrl : Initializable {
 
     fun initSerialComboBoxAction() {
         cbSerialList.init(
-            keyLastSerial!!, { cbBautRateList.value }, btnOpenSerial.selectedProperty(),
+            keyLastSerial!!, {
+                UIUtil.getSelectedInt(cbBautRateList, 115200)
+            }, btnOpenSerial.selectedProperty(),
             SerialPort.TIMEOUT_READ_SEMI_BLOCKING
         )
     }
@@ -181,10 +184,9 @@ class SerialReceiveCtrl : Initializable {
             1200, 2400, 4800, 9600, 38400, 57600, 115200, 230400, 1500000, 2000000, 3000000
         )
 
-        cbBautRateList.items.setAll(baudRates)
+        cbBautRateList.items = baudRates
         cbBautRateList.selectionModel.select(1500000)
-
-        logger.info("波特率初始化完成：${cbBautRateList.items}")
+        cbBautRateList.value = 1500000
     }
 
     fun setSerialName(serialName: String?) {

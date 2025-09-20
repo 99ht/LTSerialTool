@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<fx:root dividerPositions="0.6" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="564.0" prefWidth="802.0" type="SplitPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialSendCtrl">
+<fx:root dividerPositions="0.6" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="603.0" prefWidth="645.0" type="SplitPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.SerialSendCtrl">
     <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
             <children>
@@ -16,6 +16,8 @@
                                 <Label text="接收区：" />
                                 <Button mnemonicParsing="false" text="恢复自动滚动" />
                                 <Button mnemonicParsing="false" text="清空接收" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <ToggleButton fx:id="tgWindowMode" mnemonicParsing="false" text="独立窗口打开" />
                             </children>
                         </HBox>
                         <TextArea prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />

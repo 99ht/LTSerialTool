@@ -8,6 +8,11 @@ import indi.lt.serialtool.component.CommandTableView;
 import indi.lt.serialtool.component.SerialPortCombBox;
 import indi.lt.serialtool.component.SerialToggleButton;
 import indi.lt.serialtool.data.CommandRepository;
+import indi.lt.serialtool.utils.UIUtil;
+import indi.lt.serialtool.view.BaseStage;
+import indi.lt.serialtool.view.SerialSendPane;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -15,7 +20,11 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToolBar;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,8 +41,12 @@ public class SerialSendCtrl implements Initializable {
 
     private final Logger LOG = LogManager.getLogger(SerialSendCtrl.class);
 
+    /**
+     * 自动换行
+     */
     @FXML
     public CheckBox lineBreak;
+    public ToggleButton tgWindowMode;
 
     @FXML
     private TextField tfRemark;
@@ -55,7 +68,11 @@ public class SerialSendCtrl implements Initializable {
     @FXML
     private StackPane spTableContainer;
 
+    private SerialSendPane rootPane;
+
     private final CommandTableView table = new CommandTableView();
+
+    private BaseStage currStage;
 
     // 保存上次串口选择的 key
     private final String keyLastSerial = "sendModeLastSerialPort";
@@ -67,6 +84,24 @@ public class SerialSendCtrl implements Initializable {
         initSerialComboBox();
         loadHistoryCommands();
         setupButtonActions();
+
+        // 切换独立窗口
+        tgWindowMode.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                BaseStage baseStage = new BaseStage();
+                currStage = baseStage;
+                ToolBar toolBar = new ToolBar();
+                toolBar.setMinHeight(40);
+                VBox.setVgrow(rootPane, Priority.ALWAYS);
+                baseStage.registryDragger(toolBar);
+                baseStage.setContentView(new VBox(toolBar, rootPane));
+                baseStage.getStage().setWidth(rootPane.getWidth());
+                baseStage.getStage().setHeight(rootPane.getHeight() + 40);
+                baseStage.show();
+            } else {
+                currStage.close();
+            }
+        });
 
         // 启动时默认打开第一个串口
         cbSerialList.openSelectedSerial();
@@ -87,7 +122,11 @@ public class SerialSendCtrl implements Initializable {
      */
     private void initSerialComboBox() {
         // 串口下拉框初始化
-        cbSerialList.init(keyLastSerial, () -> cbBautrate.getValue(), btnOpenSerial.selectedProperty(), SerialPort.TIMEOUT_WRITE_BLOCKING);
+        cbSerialList.init(keyLastSerial,
+                () -> UIUtil.getSelectedInt(cbBautrate, 115200),
+                btnOpenSerial.selectedProperty(),
+                SerialPort.TIMEOUT_WRITE_BLOCKING
+        );
 
         // 选中波特率变化时重新打开串口
         cbBautrate.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -158,7 +197,10 @@ public class SerialSendCtrl implements Initializable {
             ToastQueue.show(AppState.getStage(), "发送内容不能为空", 800);
             return;
         }
-        text = text + "\n";
+
+        if (lineBreak.isSelected()) {
+            text += "\n";
+        }
 
         try {
             byte[] data = cbIsHex.isSelected() ? hexStringToBytes(text.trim()) : text.getBytes();
@@ -202,5 +244,9 @@ public class SerialSendCtrl implements Initializable {
             result[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2), 16);
         }
         return result;
+    }
+
+    public void setRootPane(SerialSendPane rootPane) {
+        this.rootPane = rootPane;
     }
 }

@@ -8,9 +8,9 @@ import java.io.IOException;
 
 public class SerialSendPane extends SplitPane {
 
-    private SerialSendCtrl  controller;
+    private SerialSendCtrl controller;
 
-    public SerialSendPane(String serialName){
+    public SerialSendPane(String serialName) {
         FXMLLoader fxmlLoader = new FXMLLoader(
                 getClass().getResource("/fxml/serial-send-pane.fxml")
         );
@@ -19,7 +19,8 @@ public class SerialSendPane extends SplitPane {
         try {
             fxmlLoader.load(); // 加载 fxml
             controller = fxmlLoader.getController(); // 获取逻辑控制器
-            //controller.setSerialName(serialName);
+            controller.setRootPane(this);
+            // controller.setSerialName(serialName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
