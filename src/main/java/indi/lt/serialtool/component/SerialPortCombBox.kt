@@ -47,6 +47,7 @@ class SerialPortCombBox : ComboBox<String?>() {
     private var baudRateSupplier: Supplier<Int>? = null
 
     private var timeOutMode = 0
+    private var timeOutMillionTime = 0
 
     /**
      * 初始化串口下拉框
@@ -60,9 +61,11 @@ class SerialPortCombBox : ComboBox<String?>() {
         keyLastSerial: String,
         baudRateSupplier: Supplier<Int>?,
         activeProperty: BooleanProperty,
-        timeOutMode: Int
+        timeOutMode: Int,
+        timeOutMillionTime: Int = 0
     ) {
         this.timeOutMode = timeOutMode
+        this.timeOutMillionTime = timeOutMillionTime
         this.keyLastSerial = Objects.requireNonNull(keyLastSerial)
         this.baudRateSupplier = baudRateSupplier
         this.activeProperty.bind(activeProperty)
@@ -184,7 +187,7 @@ class SerialPortCombBox : ComboBox<String?>() {
                 )
 
                 // 3️⃣ 设置读写超时模式（保持非阻塞或半阻塞都可以）
-                selectedPort!!.setComPortTimeouts(timeOutMode, 0, 0)
+                selectedPort!!.setComPortTimeouts(timeOutMode, 0, timeOutMillionTime.toInt())
 
                 // 4️⃣ 异步打开串口 + 超时控制
                 future = executor.submit<Boolean> { selectedPort!!.openPort() }

@@ -107,6 +107,7 @@ class CommandTableView : TableView<CommandItem?>(FXCollections.observableArrayLi
                 private val box = HBox(5.0, intervalField, unitLabel, enableCheck)
 
                 init {
+                    unitLabel.minWidth = USE_PREF_SIZE
                     box.alignment = Pos.CENTER_LEFT
                     intervalField.prefWidth = 60.0
                     // 只允许输入正整数

@@ -8,6 +8,8 @@ import indi.lt.serialtool.component.CommandTableView;
 import indi.lt.serialtool.component.SerialPortCombBox;
 import indi.lt.serialtool.component.SerialToggleButton;
 import indi.lt.serialtool.data.CommandRepository;
+import indi.lt.serialtool.service.SerialSenderService;
+import indi.lt.serialtool.utils.StringUtil;
 import indi.lt.serialtool.utils.UIUtil;
 import indi.lt.serialtool.view.BaseStage;
 import indi.lt.serialtool.view.SerialSendPane;
@@ -47,6 +49,7 @@ public class SerialSendCtrl implements Initializable {
     @FXML
     public CheckBox lineBreak;
     public ToggleButton tgWindowMode;
+    public SerialToggleButton btnScheduleSend;
 
     @FXML
     private TextField tfRemark;
@@ -73,6 +76,8 @@ public class SerialSendCtrl implements Initializable {
     private final CommandTableView table = new CommandTableView();
 
     private BaseStage currStage;
+
+    private SerialSenderService serialSenderService;
 
     // 保存上次串口选择的 key
     private final String keyLastSerial = "sendModeLastSerialPort";
@@ -103,6 +108,18 @@ public class SerialSendCtrl implements Initializable {
             }
         });
 
+
+        // 定时发送
+        btnScheduleSend.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                startSendCommand();
+            } else {
+                if (serialSenderService != null && serialSenderService.isRunning()) {
+                    serialSenderService.cancel();
+                }
+            }
+        });
+
         // 启动时默认打开第一个串口
         cbSerialList.openSelectedSerial();
     }
@@ -125,7 +142,8 @@ public class SerialSendCtrl implements Initializable {
         cbSerialList.init(keyLastSerial,
                 () -> UIUtil.getSelectedInt(cbBautrate, 115200),
                 btnOpenSerial.selectedProperty(),
-                SerialPort.TIMEOUT_WRITE_BLOCKING
+                SerialPort.TIMEOUT_WRITE_BLOCKING,
+                1000
         );
 
         // 选中波特率变化时重新打开串口
@@ -203,13 +221,27 @@ public class SerialSendCtrl implements Initializable {
         }
 
         try {
-            byte[] data = cbIsHex.isSelected() ? hexStringToBytes(text.trim()) : text.getBytes();
+            byte[] data = cbIsHex.isSelected() ? StringUtil.hexStringToBytes(text.trim()) : text.getBytes();
             cbSerialList.getSelectedPort().writeBytes(data, data.length);
             LOG.info("发送成功: " + text);
         } catch (Exception e) {
             LOG.error("发送失败", e);
             ToastQueue.show(AppState.getStage(), "发送失败: " + e.getMessage(), 1000);
         }
+    }
+
+    private void startSendCommand() {
+        if (cbSerialList.getSelectedPort() == null || !cbSerialList.getSelectedPort().isOpen()) {
+            ToastQueue.show(AppState.getStage(), "串口未打开", 800);
+            btnScheduleSend.setSelected(false);
+            return;
+        }
+
+        serialSenderService = new SerialSenderService(
+                table.getItems().filtered(CommandTableView.CommandItem::isScheduled),
+                cbSerialList.getSelectedPort()
+        );
+        serialSenderService.start();
     }
 
     /**
@@ -231,19 +263,6 @@ public class SerialSendCtrl implements Initializable {
         );
         table.getItems().add(item);
         CommandRepository.INSTANCE.add(item);
-    }
-
-    /**
-     * HEX 转 byte
-     */
-    private byte[] hexStringToBytes(String hex) {
-        hex = hex.replaceAll("\\s+", "");
-        if (hex.length() % 2 != 0) hex = "0" + hex;
-        byte[] result = new byte[hex.length() / 2];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2), 16);
-        }
-        return result;
     }
 
     public void setRootPane(SerialSendPane rootPane) {
