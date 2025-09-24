@@ -2,6 +2,9 @@ package indi.lt.serialtool.service;
 
 import com.fazecast.jSerialComm.SerialPort;
 import indi.lt.serialtool.component.PromptInlineCssTextArea;
+import indi.lt.serialtool.constant.LogType;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.scene.control.CheckBox;
@@ -19,6 +22,7 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 /**
  * 串口读取服务：
@@ -32,7 +36,6 @@ public class SerialReadService extends Service<SerialReadService.LogText> {
 
     private final SerialPort comPort;
     private final PromptInlineCssTextArea targetTextArea;
-    private final CheckBox cbTimeDisplay;
 
     /**
      * 可选高亮调度器：例如你实现的 InlineCssRegexHighlighter，提供 schedule() 即可
@@ -48,21 +51,27 @@ public class SerialReadService extends Service<SerialReadService.LogText> {
      */
     private static final int READ_BUF_SIZE = 2048;
 
+    /**
+     * 是否显示时间戳
+     */
+    private final SimpleBooleanProperty timeStampDisplayProperty = new SimpleBooleanProperty(false);
+
     // —— 构造 —— //
 
     public SerialReadService(SerialPort comPort,
                              PromptInlineCssTextArea targetTextArea,
-                             CheckBox cbTimeDisplay,
+                             BooleanProperty timeStampDisplayProperty,
                              HighlighterScheduler highlighter) {
-        this.comPort = comPort;
+        this.comPort = Objects.requireNonNull(comPort);
         this.targetTextArea = targetTextArea;
-        this.cbTimeDisplay = cbTimeDisplay;
+        this.timeStampDisplayProperty.bind(timeStampDisplayProperty);
         this.highlighterScheduler = highlighter;
+
         valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 LOG.debug("追加文本：" + newValue);
                 String text;
-                if (cbTimeDisplay.isSelected()) {
+                if (timeStampDisplayProperty.get()) {
                     text = newValue.toString();
                 } else {
                     text = newValue.text;
@@ -172,6 +181,22 @@ public class SerialReadService extends Service<SerialReadService.LogText> {
         }
     }
 
+    @Override
+    public void start() {
+        super.start();
+        LOG.info("串口 [" + comPort + "] 读取服务开启");
+    }
+
+    @Override
+    public boolean cancel() {
+        if (super.cancel()) {
+            LOG.info("串口 [" + comPort + "] 读取服务关闭");
+            return true;
+        }
+        LOG.error("串口 [" + comPort + "] 读取服务失败");
+        return false;
+    }
+
     /**
      * 根据是否带时间戳，格式化一行，并追加换行符。
      */
@@ -179,6 +204,8 @@ public class SerialReadService extends Service<SerialReadService.LogText> {
         String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
         return new LogText(ts, raw);
     }
+
+
 
     public static class LogText {
         private final String timeStamp;
@@ -204,13 +231,7 @@ public class SerialReadService extends Service<SerialReadService.LogText> {
 
         @Override
         public String toString() {
-            return "[" + timeStamp + "] " + text;
+            return "[" + timeStamp + " " + LogType.RECEIVE.getType() + "] " + text;
         }
-    }
-
-    @Override
-    public void start() {
-        super.start();
-        LOG.debug("串口读取服务开启");
     }
 }

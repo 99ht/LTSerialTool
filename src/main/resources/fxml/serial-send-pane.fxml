@@ -14,8 +14,8 @@
                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                             <children>
                                 <Label text="接收区：" />
-                                <Button mnemonicParsing="false" text="恢复自动滚动" />
-                                <Button mnemonicParsing="false" text="清空接收" />
+                                <Button mnemonicParsing="false" text="恢复自动滚动" onAction="#restoreScrolling"/>
+                                <Button mnemonicParsing="false" text="清空接收" onAction="#clearLogs"/>
                         <Region HBox.hgrow="ALWAYS" />
                         <ToggleButton fx:id="tgWindowMode" mnemonicParsing="false" text="独立窗口打开" />
                             </children>

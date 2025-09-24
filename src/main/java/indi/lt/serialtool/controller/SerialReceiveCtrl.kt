@@ -21,7 +21,6 @@ import java.io.FileWriter
 import java.io.IOException
 import java.net.URL
 import java.util.*
-import java.util.function.Supplier
 
 /**
  * 接收模式逻辑
@@ -148,7 +147,7 @@ class SerialReceiveCtrl : Initializable {
                 patternTextProperty().bind(tfKeyWord.textProperty())
             }
             serialReadService = SerialReadService(
-                cbSerialList.selectedPort, textAreaOrigin, cbTimeDisplay
+                cbSerialList.selectedPort, textAreaOrigin, cbTimeDisplay.selectedProperty()
             ) { highlighter?.schedule() }.also { it.start() }
         }
         cbSerialList.setOnOpenFailed {

@@ -4,7 +4,12 @@ import com.fazecast.jSerialComm.SerialPort;
 import github.nonoas.jfx.flat.ui.AppState;
 import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
 import github.nonoas.jfx.flat.ui.stage.ToastQueue;
-import indi.lt.serialtool.component.*;
+import indi.lt.serialtool.component.CommandTableView;
+import indi.lt.serialtool.component.InlineCssRegexHighlighter;
+import indi.lt.serialtool.component.PromptInlineCssTextArea;
+import indi.lt.serialtool.component.SerialPortCombBox;
+import indi.lt.serialtool.component.SerialToggleButton;
+import indi.lt.serialtool.constant.CommandType;
 import indi.lt.serialtool.data.CommandRepository;
 import indi.lt.serialtool.service.SerialReadService;
 import indi.lt.serialtool.service.SerialSenderService;
@@ -12,8 +17,7 @@ import indi.lt.serialtool.utils.StringUtil;
 import indi.lt.serialtool.utils.UIUtil;
 import indi.lt.serialtool.view.BaseStage;
 import indi.lt.serialtool.view.SerialSendPane;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -88,11 +92,14 @@ public class SerialSendCtrl implements Initializable {
     private SerialSenderService serialSenderService;
     private SerialReadService serialReadService;
 
+    private InlineCssRegexHighlighter highlighter;
+
     // 保存上次串口选择的 key
     private final String keyLastSerial = "sendModeLastSerialPort";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        highlighter = new InlineCssRegexHighlighter(taRecvArea);
         spTableContainer.getChildren().add(table);
         initBaudRateList();
         initSerialComboBox();
@@ -130,7 +137,7 @@ public class SerialSendCtrl implements Initializable {
         });
 
         // 启动时默认打开第一个串口
-        cbSerialList.openSelectedSerial();
+        // cbSerialList.openSelectedSerial();
     }
 
     /**
@@ -197,15 +204,8 @@ public class SerialSendCtrl implements Initializable {
             serialReadService = new SerialReadService(
                     cbSerialList.getSelectedPort(),
                     taRecvArea,
-                    new CheckBox() {{
-                        setSelected(true);
-                    }},
-                    new SerialReadService.HighlighterScheduler() {
-                        @Override
-                        public void schedule() {
-                            new InlineCssRegexHighlighter(taRecvArea).schedule();
-                        }
-                    }
+                    new SimpleBooleanProperty(true),
+                    () -> highlighter.schedule()
             );
             serialReadService.start();
         });
@@ -285,12 +285,12 @@ public class SerialSendCtrl implements Initializable {
             return;
         }
 
-        String type = cbIsHex.isSelected() ? "HEX" : "TXT";
+        CommandType type = cbIsHex.isSelected() ? CommandType.HEX : CommandType.TXT;
         CommandTableView.CommandItem item = new CommandTableView.CommandItem(
                 UUID.randomUUID().toString(),
                 tfRemark.getText(),
                 tfCommand.getText(),
-                type
+                type.toString()
         );
         table.getItems().add(item);
         CommandRepository.INSTANCE.add(item);
@@ -298,5 +298,18 @@ public class SerialSendCtrl implements Initializable {
 
     public void setRootPane(SerialSendPane rootPane) {
         this.rootPane = rootPane;
+    }
+
+    /**
+     * 恢复自动滚动
+     */
+    @FXML
+    private void restoreScrolling() {
+        taRecvArea.setAutoScroll(true);
+    }
+
+    @FXML
+    private void clearLogs() {
+        taRecvArea.getArea().clear();
     }
 }

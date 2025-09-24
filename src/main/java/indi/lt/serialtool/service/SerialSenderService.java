@@ -5,11 +5,9 @@ import com.fazecast.jSerialComm.SerialPort;
 import indi.lt.serialtool.component.CommandTableView;
 import indi.lt.serialtool.component.PromptInlineCssTextArea;
 import indi.lt.serialtool.utils.StringUtil;
-import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextArea;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
