@@ -20,7 +20,7 @@
                         <ToggleButton fx:id="tgWindowMode" mnemonicParsing="false" text="独立窗口打开" />
                             </children>
                         </HBox>
-                        <TextArea prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                        <TextArea fx:id="taRecvArea" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                         <HBox prefHeight="180.0" prefWidth="200.0" spacing="10.0">
                             <children>
                                 <VBox HBox.hgrow="NEVER">
@@ -43,13 +43,13 @@
                                 </VBox>
                         <VBox HBox.hgrow="NEVER">
                            <children>
-                                        <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="HEX显示" />
+                                        <CheckBox fx:id="cbHexDisplay" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="HEX显示" />
                               <Region minWidth="0.0" VBox.vgrow="ALWAYS" />
                                         <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="HEX发送" />
                               <Region VBox.vgrow="ALWAYS" />
                                         <CheckBox fx:id="lineBreak" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="自动换行" />
                               <Region VBox.vgrow="ALWAYS" />
-                                        <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="时间戳显示" />
+                                        <CheckBox fx:id="cbTimeStampDisplay" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="时间戳显示" />
                            </children>
                         </VBox>
                                 <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0" HBox.hgrow="ALWAYS">

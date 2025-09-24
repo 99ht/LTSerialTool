@@ -56,9 +56,16 @@ public class SerialSendCtrl implements Initializable {
     @FXML
     private TextField tfCommand;
     @FXML
+    private TextArea taRecvArea;
+    @FXML
     private TextArea taSendArea;
     @FXML
+    private CheckBox cbHexDisplay;
+    @FXML
+    private CheckBox cbTimeStampDisplay;
+    @FXML
     private CheckBox cbIsHex;
+
 
     @FXML
     private SerialPortCombBox cbSerialList;
@@ -239,7 +246,10 @@ public class SerialSendCtrl implements Initializable {
 
         serialSenderService = new SerialSenderService(
                 table.getItems().filtered(CommandTableView.CommandItem::isScheduled),
-                cbSerialList.getSelectedPort()
+                cbSerialList.getSelectedPort(),
+                taRecvArea,
+                cbHexDisplay,
+                cbTimeStampDisplay
         );
         serialSenderService.start();
     }

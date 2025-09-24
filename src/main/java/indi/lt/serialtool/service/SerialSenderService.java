@@ -4,8 +4,11 @@ package indi.lt.serialtool.service;
 import com.fazecast.jSerialComm.SerialPort;
 import indi.lt.serialtool.component.CommandTableView;
 import indi.lt.serialtool.utils.StringUtil;
+import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TextArea;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,10 +28,26 @@ public class SerialSenderService extends Service<Void> {
 
     private final SerialPort serialPort;
 
+    private final TextArea taRecvArea;
+    private final CheckBox cbHexDisplay;
+    private final CheckBox cbTimeStampDisplay;
+
     public SerialSenderService(List<CommandTableView.CommandItem> commands,
-                               SerialPort selectedPort) {
+                               SerialPort selectedPort, TextArea taRecvArea, CheckBox cbHexDisplay,
+                                CheckBox cbTimeStampDisplay) {
         this.commands = commands;
         this.serialPort = selectedPort;
+        this.taRecvArea = taRecvArea;
+        this.cbHexDisplay = cbHexDisplay;
+        this.cbTimeStampDisplay = cbTimeStampDisplay;
+    }
+
+    public SerialSenderService(FilteredList<CommandTableView.CommandItem> filtered, SerialPort selectedPort, TextArea taRecvArea, CheckBox cbHexDisplay, CheckBox cbTimeStampDisplay, List<CommandTableView.CommandItem> commands, SerialPort serialPort, TextArea taRecvArea1, CheckBox cbHexDisplay1, CheckBox cbTimeStampDisplay1) {
+        this.commands = commands;
+        this.serialPort = serialPort;
+        this.taRecvArea = taRecvArea1;
+        this.cbHexDisplay = cbHexDisplay1;
+        this.cbTimeStampDisplay = cbTimeStampDisplay1;
     }
 
     @Override
