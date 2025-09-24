@@ -34,11 +34,8 @@ public class MainStage extends BaseStage {
             setMinHeight(600);
         }
 
-
-        if (x != null && y != null) {
-            stage.setX(Double.parseDouble(x));
-            stage.setY(Double.parseDouble(y));
-        }
+        stage.setX(Double.parseDouble(x));
+        stage.setY(Double.parseDouble(y));
 
         Button pinButton = UIFactory.createPinButton(stage);
         Tooltip.install(pinButton, new Tooltip("窗口置顶"));

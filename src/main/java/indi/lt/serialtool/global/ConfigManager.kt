@@ -1,66 +1,69 @@
-package indi.lt.serialtool.global;
+package indi.lt.serialtool.global
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
+import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.*
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Properties;
+object ConfigManager {
+    private val LOG: Logger = LogManager.getLogger(ConfigManager::class.java)
 
-public class ConfigManager {
+    private val CONFIG_DIR = "${System.getProperty("user.home")}${File.separator}.serialtool"
+    private val CONFIG_FILE = "$CONFIG_DIR${File.separator}config.properties"
 
-    private static final Logger LOG = LogManager.getLogger(ConfigManager.class);
+    const val KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS: String = "receive.splitPane.dividerPositions"
 
-    private static final String CONFIG_DIR = System.getProperty("user.home") + File.separator + ".serialtool";
-    private static final String CONFIG_FILE = CONFIG_DIR + File.separator + "config.properties";
+    private val props = Properties()
 
-    public static final String KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS = "receive.splitPane.dividerPositions";
-
-    private static final Properties props = new Properties();
-
-    static {
-        load();
+    init {
+        load()
     }
 
-    private static void load() {
+    private fun load() {
         try {
-            Path dirPath = Path.of(CONFIG_DIR);
+            val dirPath = Path.of(CONFIG_DIR)
             if (!Files.exists(dirPath)) {
-                Files.createDirectories(dirPath);
+                Files.createDirectories(dirPath)
             }
-            File file = new File(CONFIG_FILE);
+            val file = File(CONFIG_FILE)
             if (file.exists()) {
-                try (FileReader reader = new FileReader(file)) {
-                    props.load(reader);
+                FileReader(file).use { reader ->
+                    props.load(reader)
                 }
             }
-        } catch (IOException e) {
-            LOG.error(e);
+        } catch (e: IOException) {
+            LOG.error(e)
         }
     }
 
-    public static void save() {
-        try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
-            props.store(writer, "SerialTool Configuration");
-        } catch (IOException e) {
-            LOG.error(e);
+    fun save() {
+        try {
+            FileWriter(CONFIG_FILE).use { writer ->
+                props.store(writer, "SerialTool Configuration")
+            }
+        } catch (e: IOException) {
+            LOG.error(e)
         }
     }
 
-    public static void set(String key, String value) {
-        props.setProperty(key, value);
-        save();
+    @JvmStatic
+    fun set(key: String?, value: String?) {
+        props.setProperty(key, value)
+        save()
     }
 
-    public static String get(String key, String defaultValue) {
-        return props.getProperty(key, defaultValue);
+    @JvmStatic
+    fun get(key: String?, defaultValue: String?): String {
+        return props.getProperty(key, defaultValue)
     }
 
-    public static String get(String key) {
-        return props.getProperty(key);
+    @JvmStatic
+    fun get(key: String?): String {
+        return props.getProperty(key)
     }
 }
