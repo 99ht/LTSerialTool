@@ -129,15 +129,21 @@ public class SerialReadService extends Service<SerialReadService.LogText> {
                         LOG.error("Serial read error", e);
                     }
                 } finally {
-                    try {
-                        if (comPort.isOpen()) comPort.closePort();
-                    } catch (Exception ex) {
-                        LOG.warn("closePort failed", ex);
-                    }
+                    tryClosePort();
                 }
                 return null;
             }
         };
+    }
+
+    private void tryClosePort() {
+        try {
+            if (comPort != null && comPort.isOpen()) {
+                comPort.closePort();
+            }
+        } catch (Exception ex) {
+            LOG.warn("closePort failed", ex);
+        }
     }
 
     private void appendText(String batch) {

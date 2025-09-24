@@ -20,7 +20,7 @@
                         <ToggleButton fx:id="tgWindowMode" mnemonicParsing="false" text="独立窗口打开" />
                             </children>
                         </HBox>
-                        <TextArea fx:id="taRecvArea" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                        <PromptInlineCssTextArea fx:id="taRecvArea" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                         <HBox prefHeight="180.0" prefWidth="200.0" spacing="10.0">
                             <children>
                                 <VBox HBox.hgrow="NEVER">

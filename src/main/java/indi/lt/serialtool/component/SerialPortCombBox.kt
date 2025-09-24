@@ -187,7 +187,7 @@ class SerialPortCombBox : ComboBox<String?>() {
                 )
 
                 // 3️⃣ 设置读写超时模式（保持非阻塞或半阻塞都可以）
-                selectedPort!!.setComPortTimeouts(timeOutMode, 0, timeOutMillionTime.toInt())
+                selectedPort!!.setComPortTimeouts(timeOutMode, 0, timeOutMillionTime)
 
                 // 4️⃣ 异步打开串口 + 超时控制
                 future = executor.submit<Boolean> { selectedPort!!.openPort() }

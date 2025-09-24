@@ -4,10 +4,9 @@ import com.fazecast.jSerialComm.SerialPort;
 import github.nonoas.jfx.flat.ui.AppState;
 import github.nonoas.jfx.flat.ui.concurrent.TaskHandler;
 import github.nonoas.jfx.flat.ui.stage.ToastQueue;
-import indi.lt.serialtool.component.CommandTableView;
-import indi.lt.serialtool.component.SerialPortCombBox;
-import indi.lt.serialtool.component.SerialToggleButton;
+import indi.lt.serialtool.component.*;
 import indi.lt.serialtool.data.CommandRepository;
+import indi.lt.serialtool.service.SerialReadService;
 import indi.lt.serialtool.service.SerialSenderService;
 import indi.lt.serialtool.utils.StringUtil;
 import indi.lt.serialtool.utils.UIUtil;
@@ -43,6 +42,8 @@ public class SerialSendCtrl implements Initializable {
 
     private final Logger LOG = LogManager.getLogger(SerialSendCtrl.class);
 
+    private static final int DEFAULT_BAUTRATE = 1500000;
+
     /**
      * 自动换行
      */
@@ -56,7 +57,7 @@ public class SerialSendCtrl implements Initializable {
     @FXML
     private TextField tfCommand;
     @FXML
-    private TextArea taRecvArea;
+    private PromptInlineCssTextArea taRecvArea;
     @FXML
     private TextArea taSendArea;
     @FXML
@@ -85,6 +86,7 @@ public class SerialSendCtrl implements Initializable {
     private BaseStage currStage;
 
     private SerialSenderService serialSenderService;
+    private SerialReadService serialReadService;
 
     // 保存上次串口选择的 key
     private final String keyLastSerial = "sendModeLastSerialPort";
@@ -135,10 +137,10 @@ public class SerialSendCtrl implements Initializable {
      * 初始化波特率下拉列表
      */
     private void initBaudRateList() {
-        List<Integer> baudRates = Arrays.asList(1200, 2400, 4800, 9600, 38400, 57600, 115200, 230400, 1500000, 2000000, 3000000);
+        List<Integer> baudRates = Arrays.asList(1200, 2400, 4800, 9600, 38400, 57600, 115200, 230400, DEFAULT_BAUTRATE, 2000000, 3000000);
         cbBautrate.getItems().clear();
         cbBautrate.getItems().addAll(baudRates);
-        cbBautrate.getSelectionModel().select(Integer.valueOf(115200));
+        cbBautrate.getSelectionModel().select(Integer.valueOf(DEFAULT_BAUTRATE));
     }
 
     /**
@@ -147,9 +149,9 @@ public class SerialSendCtrl implements Initializable {
     private void initSerialComboBox() {
         // 串口下拉框初始化
         cbSerialList.init(keyLastSerial,
-                () -> UIUtil.getSelectedInt(cbBautrate, 115200),
+                () -> UIUtil.getSelectedInt(cbBautrate, DEFAULT_BAUTRATE),
                 btnOpenSerial.selectedProperty(),
-                SerialPort.TIMEOUT_WRITE_BLOCKING,
+                SerialPort.TIMEOUT_WRITE_BLOCKING | SerialPort.TIMEOUT_READ_SEMI_BLOCKING,
                 1000
         );
 
@@ -190,7 +192,23 @@ public class SerialSendCtrl implements Initializable {
             }
         });
 
-        cbSerialList.setOnOpenSucceed(() -> btnOpenSerial.setDisable(false));
+        cbSerialList.setOnOpenSucceed(() -> {
+            btnOpenSerial.setDisable(false);
+            serialReadService = new SerialReadService(
+                    cbSerialList.getSelectedPort(),
+                    taRecvArea,
+                    new CheckBox() {{
+                        setSelected(true);
+                    }},
+                    new SerialReadService.HighlighterScheduler() {
+                        @Override
+                        public void schedule() {
+                            new InlineCssRegexHighlighter(taRecvArea).schedule();
+                        }
+                    }
+            );
+            serialReadService.start();
+        });
         cbSerialList.setOnOpenFailed(() -> {
             btnOpenSerial.setDisable(false);
             btnOpenSerial.setSelected(false);
@@ -205,6 +223,9 @@ public class SerialSendCtrl implements Initializable {
             cbSerialList.getSelectedPort().closePort();
             LOG.info("串口已关闭");
             ToastQueue.show(AppState.getStage(), "串口已关闭", 800);
+        }
+        if (serialReadService != null) {
+            serialReadService.cancel();
         }
     }
 
