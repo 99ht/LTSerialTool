@@ -63,17 +63,21 @@ public class SerialReadService extends Service<LogText> {
                              PromptInlineCssTextArea targetTextArea,
                              BooleanProperty timeStampDisplayProperty,
                              HighlighterScheduler highlighter) {
+        this(comPort, targetTextArea, timeStampDisplayProperty, highlighter, false);
+    }
+    public SerialReadService(SerialPort comPort,
+                             PromptInlineCssTextArea targetTextArea,
+                             BooleanProperty timeStampDisplayProperty,
+                             HighlighterScheduler highlighter,
+                             boolean showLogType) {
         this.comPort = Objects.requireNonNull(comPort);
         this.targetTextArea = targetTextArea;
         this.timeStampDisplayProperty.bind(timeStampDisplayProperty);
         this.highlighterScheduler = highlighter;
 
         valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                LOG.debug("追加文本：" + newValue);
-                String text = newValue.getLogText(timeStampDisplayProperty.get());
-                appendText(text + "\n");
-            }
+            String logText = newValue.getLogText(timeStampDisplayProperty.get(), showLogType);
+            targetTextArea.appendText(logText + "\n");
         });
     }
 

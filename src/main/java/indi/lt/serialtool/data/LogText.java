@@ -32,11 +32,25 @@ public class LogText {
     }
 
     public String getLogText(boolean hasTimeStamp) {
-        if (hasTimeStamp) {
-            return toString();
-        } else {
-            return "[" + logType.getType() + "] " + text;
+        return getLogText(hasTimeStamp, false);
+    }
+
+    public String getLogText(boolean hasTimeStamp, boolean hasLogType) {
+        if (!(hasLogType || hasTimeStamp)) {
+            return text;
         }
+        StringBuilder sb = new StringBuilder("[");
+        if (hasTimeStamp) {
+            sb.append(timeStamp);
+            if (hasLogType) {
+                sb.append(" ");
+            }
+        }
+        if (hasLogType) {
+            sb.append(logType.getType());
+        }
+        sb.append("] ").append(text);
+        return sb.toString();
     }
 
     @Override

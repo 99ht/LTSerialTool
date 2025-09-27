@@ -7,6 +7,7 @@ import indi.lt.serialtool.component.SerialPortCombBox
 import indi.lt.serialtool.component.SerialToggleButton
 import indi.lt.serialtool.service.SerialReadService
 import indi.lt.serialtool.utils.UIUtil
+import javafx.application.Platform
 import javafx.beans.Observable
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
@@ -100,8 +101,7 @@ class SerialReceiveCtrl : Initializable {
         val fileChooser = FileChooser().apply {
             title = "保存日志文件"
             extensionFilters.addAll(
-                FileChooser.ExtensionFilter("文本文件", "*.txt"),
-                FileChooser.ExtensionFilter("所有文件", "*.*")
+                FileChooser.ExtensionFilter("文本文件", "*.txt"), FileChooser.ExtensionFilter("所有文件", "*.*")
             )
         }
 
@@ -126,8 +126,7 @@ class SerialReceiveCtrl : Initializable {
         cbSerialList.init(
             keyLastSerial!!, {
                 UIUtil.getSelectedInt(cbBautRateList, 115200)
-            }, btnOpenSerial.selectedProperty(),
-            SerialPort.TIMEOUT_READ_SEMI_BLOCKING
+            }, btnOpenSerial.selectedProperty(), SerialPort.TIMEOUT_READ_SEMI_BLOCKING
         )
     }
 
@@ -184,8 +183,10 @@ class SerialReceiveCtrl : Initializable {
         )
 
         cbBautRateList.items = baudRates
-        cbBautRateList.selectionModel.select(1500000)
-        cbBautRateList.value = 1500000
+        Platform.runLater {
+            cbBautRateList.selectionModel.select(1500000)
+            cbBautRateList.value = 1500000
+        }
     }
 
     fun setSerialName(serialName: String?) {

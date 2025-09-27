@@ -209,7 +209,8 @@ public class SerialSendCtrl implements Initializable {
                     cbSerialList.getSelectedPort(),
                     taRecvArea,
                     new SimpleBooleanProperty(true),
-                    () -> highlighter.schedule()
+                    () -> highlighter.schedule(),
+                    true
             );
             serialReadService.start();
         });
@@ -258,7 +259,7 @@ public class SerialSendCtrl implements Initializable {
             LOG.info("发送成功: " + text);
             String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
             LogText logText = new LogText(ts, text, LogType.SEND);
-            taRecvArea.appendText(logText.getLogText(cbTimeStampDisplay.isSelected()) + "\r\n");
+            taRecvArea.appendText(logText.getLogText(cbTimeStampDisplay.isSelected(), true) + "\r\n");
         } catch (Exception e) {
             LOG.error("发送失败", e);
             ToastQueue.show(AppState.getStage(), "发送失败: " + e.getMessage(), 1000);
