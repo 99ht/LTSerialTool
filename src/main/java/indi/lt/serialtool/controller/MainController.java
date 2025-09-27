@@ -22,6 +22,8 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -35,6 +37,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -114,6 +117,15 @@ public class MainController implements Initializable {
         mbTheme.setGraphic(new FontIcon(INVERT_COLORS));
         mbTools.setGraphic(new FontIcon(TUNE));
         mbHelp.setGraphic(new FontIcon(INFO));
+
+        Image logo = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/image/logo.png")));
+        ImageView logoView = new ImageView(logo);
+        logoView.setFitWidth(40);
+        logoView.setFitHeight(40);
+        Region region = new Region();
+        region.setMinHeight(10);
+        toolBar.getItems().add(0, logoView);
+        toolBar.getItems().add(1, region);
 
         // 创建 ToggleGroup
         ToggleGroup themeGroup = new ToggleGroup();
