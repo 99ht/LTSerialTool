@@ -120,8 +120,8 @@ public class MainController implements Initializable {
 
         Image logo = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/image/logo.png")));
         ImageView logoView = new ImageView(logo);
-        logoView.setFitWidth(40);
-        logoView.setFitHeight(40);
+        logoView.setFitWidth(38);
+        logoView.setFitHeight(38);
         Region region = new Region();
         region.setMinHeight(10);
         toolBar.getItems().add(0, logoView);
