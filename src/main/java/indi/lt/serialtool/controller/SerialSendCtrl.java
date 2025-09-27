@@ -10,7 +10,9 @@ import indi.lt.serialtool.component.PromptInlineCssTextArea;
 import indi.lt.serialtool.component.SerialPortCombBox;
 import indi.lt.serialtool.component.SerialToggleButton;
 import indi.lt.serialtool.constant.CommandType;
+import indi.lt.serialtool.constant.LogType;
 import indi.lt.serialtool.data.CommandRepository;
+import indi.lt.serialtool.data.LogText;
 import indi.lt.serialtool.service.SerialReadService;
 import indi.lt.serialtool.service.SerialSenderService;
 import indi.lt.serialtool.utils.StringUtil;
@@ -34,6 +36,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -252,6 +256,9 @@ public class SerialSendCtrl implements Initializable {
             byte[] data = cbIsHex.isSelected() ? StringUtil.hexStringToBytes(text.trim()) : text.getBytes();
             cbSerialList.getSelectedPort().writeBytes(data, data.length);
             LOG.info("发送成功: " + text);
+            String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
+            LogText logText = new LogText(ts, text, LogType.SEND);
+            taRecvArea.appendText(logText.getLogText(cbTimeStampDisplay.isSelected()) + "\r\n");
         } catch (Exception e) {
             LOG.error("发送失败", e);
             ToastQueue.show(AppState.getStage(), "发送失败: " + e.getMessage(), 1000);

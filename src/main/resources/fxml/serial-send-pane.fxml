@@ -92,7 +92,7 @@
                         <HBox alignment="CENTER_LEFT">
                             <children>
                                 <Label maxWidth="1.7976931348623157E308" text="自定义指令区：" HBox.hgrow="ALWAYS" />
-                                <SerialToggleButton fx:id="btnScheduleSend" mnemonicParsing="false" text="开启定时发送" selectedText="停止发送" unSelectedText="开启定时发送"/>
+                                <SerialToggleButton fx:id="btnScheduleSend" mnemonicParsing="false" text="开启定时发送" selectedText="停止定时发送" unSelectedText="开启定时发送"/>
                             </children>
                         </HBox>
                         <HBox alignment="CENTER_LEFT" spacing="10.0">

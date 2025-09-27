@@ -3,6 +3,7 @@ package indi.lt.serialtool.service;
 import com.fazecast.jSerialComm.SerialPort;
 import indi.lt.serialtool.component.PromptInlineCssTextArea;
 import indi.lt.serialtool.constant.LogType;
+import indi.lt.serialtool.data.LogText;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Service;
@@ -31,7 +32,7 @@ import java.util.Objects;
  * - 追加到 InlineCssTextArea 后按“最大行数”裁剪（段落级，性能更好）
  * - 可选集成高亮器：每次追加/裁剪后调度一次高亮刷新
  */
-public class SerialReadService extends Service<SerialReadService.LogText> {
+public class SerialReadService extends Service<LogText> {
     private static final Logger LOG = LogManager.getLogger(SerialReadService.class);
 
     private final SerialPort comPort;
@@ -70,12 +71,7 @@ public class SerialReadService extends Service<SerialReadService.LogText> {
         valueProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 LOG.debug("追加文本：" + newValue);
-                String text;
-                if (timeStampDisplayProperty.get()) {
-                    text = newValue.toString();
-                } else {
-                    text = newValue.text;
-                }
+                String text = newValue.getLogText(timeStampDisplayProperty.get());
                 appendText(text + "\n");
             }
         });
@@ -173,7 +169,7 @@ public class SerialReadService extends Service<SerialReadService.LogText> {
                 if (end > 0 && lineBuf.charAt(end - 1) == '\r') {
                     lineBuf.setLength(end - 1);
                 }
-                uiBatch.append(formatLine(lineBuf.toString()).text);
+                uiBatch.append(formatLine(lineBuf.toString()).getText());
                 lineBuf.setLength(0);
             } else {
                 lineBuf.append(c);
@@ -202,36 +198,6 @@ public class SerialReadService extends Service<SerialReadService.LogText> {
      */
     private LogText formatLine(String raw) {
         String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
-        return new LogText(ts, raw);
-    }
-
-
-
-    public static class LogText {
-        private final String timeStamp;
-        private final String text;
-
-        public LogText(String timeStamp, String text) {
-            this.timeStamp = timeStamp;
-            this.text = text;
-        }
-
-        @Override
-        public int hashCode() {
-            return super.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof LogText)) {
-                return false;
-            }
-            return String.valueOf(this).equals(String.valueOf(obj));
-        }
-
-        @Override
-        public String toString() {
-            return "[" + timeStamp + " " + LogType.RECEIVE.getType() + "] " + text;
-        }
+        return new LogText(ts, raw, LogType.RECEIVE);
     }
 }

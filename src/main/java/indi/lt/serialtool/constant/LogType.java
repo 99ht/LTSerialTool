@@ -7,8 +7,8 @@ package indi.lt.serialtool.constant;
  * @since 1.0.0
  */
 public enum LogType {
-    RECEIVE("TX"),
-    SEND("RX"),
+    RECEIVE("RX"),
+    SEND("TX"),
     ;
 
     private String type;

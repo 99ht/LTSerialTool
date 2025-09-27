@@ -4,13 +4,19 @@ package indi.lt.serialtool.service;
 import com.fazecast.jSerialComm.SerialPort;
 import indi.lt.serialtool.component.CommandTableView;
 import indi.lt.serialtool.component.PromptInlineCssTextArea;
+import indi.lt.serialtool.constant.LogType;
+import indi.lt.serialtool.data.LogText;
 import indi.lt.serialtool.utils.StringUtil;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.scene.control.CheckBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
@@ -19,7 +25,7 @@ import java.util.List;
  * @date 2025/9/23
  * @since
  */
-public class SerialSenderService extends Service<Void> {
+public class SerialSenderService extends Service<LogText> {
 
     private final Logger LOG = LogManager.getLogger(SerialSenderService.class);
 
@@ -39,13 +45,19 @@ public class SerialSenderService extends Service<Void> {
         this.taRecvArea = taRecvArea;
         this.cbHexDisplay = cbHexDisplay;
         this.cbTimeStampDisplay = cbTimeStampDisplay;
+
+        valueProperty().addListener((observableValue, unused, newVal) -> {
+            if (null != newVal) {
+                taRecvArea.appendText(newVal.getLogText(cbTimeStampDisplay.isSelected()));
+            }
+        });
     }
 
     @Override
-    protected Task<Void> createTask() {
+    protected Task<LogText> createTask() {
         return new Task<>() {
             @Override
-            protected Void call() throws Exception {
+            protected LogText call() throws Exception {
                 int commandIndex = 0;
                 while (true) {
                     // 检查任务是否被取消
@@ -74,6 +86,7 @@ public class SerialSenderService extends Service<Void> {
                                 : command.getBytes();
                         serialPort.writeBytes(data, data.length);
                         LOG.info("已发送: " + currentCommand.getCommand());
+                        updateValue(genLogText(command));
                     } catch (Exception e) {
                         LOG.error("指令[{}]发送失败", currentCommand.getCommand(), e);
                     }
@@ -83,5 +96,10 @@ public class SerialSenderService extends Service<Void> {
                 return null;
             }
         };
+    }
+
+    private LogText genLogText(String command) {
+        String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
+        return new LogText(ts, command, LogType.SEND);
     }
 }
