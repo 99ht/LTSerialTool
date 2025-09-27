@@ -1,6 +1,7 @@
 package indi.lt.serialtool;
 
 import github.nonoas.jfx.flat.ui.AppState;
+import github.nonoas.jfx.flat.ui.AutoReleaseApplication;
 import github.nonoas.jfx.flat.ui.theme.LightTheme;
 import indi.lt.serialtool.controller.MainController;
 import indi.lt.serialtool.global.ConfigManager;
@@ -16,7 +17,7 @@ import java.io.IOException;
 
 import static indi.lt.serialtool.global.ConfigManager.KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS;
 
-public class SerialApplication extends Application {
+public class SerialApplication extends AutoReleaseApplication {
 
     private final Logger LOG = LogManager.getLogger(MainController.class);
 
@@ -49,6 +50,7 @@ public class SerialApplication extends Application {
     @Override
     public void stop() throws Exception {
         saveLayout();
+        super.stop();
     }
 
     private void saveLayout() {

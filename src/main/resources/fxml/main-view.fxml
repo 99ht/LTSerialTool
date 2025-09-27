@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.input.*?>
-<?import javafx.scene.layout.*?>
-
+<?import javafx.scene.control.CheckMenuItem?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.layout.BorderPane?>
 <BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.MainController">
-    <top>
-        <MenuBar fx:id="menuBar" prefHeight="26.0" prefWidth="776.0">
-            <menus>
-                <Menu mnemonicParsing="false" text="文件">
+    <center>
+        <TabPane fx:id="tabRootPane" BorderPane.alignment="CENTER">
+        </TabPane>
+    </center>
+    <left>
+        <ToolBar fx:id="toolBar" orientation="VERTICAL" BorderPane.alignment="CENTER">
+            <items>
+                <MenuButton fx:id="mbFile" mnemonicParsing="false">
                     <items>
                         <MenuItem mnemonicParsing="false" text="保存为压缩包">
                             <accelerator>
@@ -18,8 +25,8 @@
                             </accelerator>
                         </MenuItem>
                     </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="设置">
+                </MenuButton>
+                <MenuButton fx:id="mbSetting" mnemonicParsing="false">
                     <items>
                         <CheckMenuItem mnemonicParsing="false" text="自动保存"/>
                         <MenuItem mnemonicParsing="false" text="设置自动保存超时时间"/>
@@ -27,44 +34,24 @@
                         <CheckMenuItem mnemonicParsing="false" text="提示缓冲区达到90%容量"/>
                         <MenuItem mnemonicParsing="false" text="设置显示缓冲区容量"/>
                     </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="主题" fx:id="menuTheme">
+                </MenuButton>
+                <MenuButton fx:id="mbTheme" mnemonicParsing="false">
                     <items>
                     </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="工具">
+                </MenuButton>
+                <MenuButton fx:id="mbTools" mnemonicParsing="false">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="ASCII码表" onAction="#openAsciiTable"/>
+                        <MenuItem mnemonicParsing="false" onAction="#openAsciiTable" text="ASCII码表"/>
                     </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="模式">
+                </MenuButton>
+                <MenuButton fx:id="mbHelp" mnemonicParsing="false">
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#changeToReceiveMode" text="接收模式">
-                            <accelerator>
-                                <KeyCodeCombination alt="UP" code="DIGIT1" control="DOWN" meta="UP" shift="UP"
-                                                    shortcut="UP"/>
-                            </accelerator>
-                        </MenuItem>
-                        <MenuItem mnemonicParsing="false" onAction="#changeToSendMode" text="发送模式">
-                            <accelerator>
-                                <KeyCodeCombination alt="UP" code="DIGIT2" control="DOWN" meta="UP" shift="UP"
-                                                    shortcut="UP"/>
-                            </accelerator>
-                        </MenuItem>
-                    </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="帮助">
-                    <items>
-                        <MenuItem mnemonicParsing="false" text="前往官网" onAction="#goToWebsite"/>
+                        <MenuItem mnemonicParsing="false" onAction="#goToWebsite" text="前往官网"/>
                         <MenuItem mnemonicParsing="false" text="投喂作者"/>
                         <MenuItem mnemonicParsing="false" text="关于"/>
                     </items>
-                </Menu>
-            </menus>
-        </MenuBar>
-    </top>
-    <center>
-        <StackPane fx:id="stpRootPane" BorderPane.alignment="CENTER">
-        </StackPane>
-    </center>
+                </MenuButton>
+            </items>
+        </ToolBar>
+    </left>
 </BorderPane>

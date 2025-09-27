@@ -10,7 +10,7 @@ public class SerialSendPane extends SplitPane {
 
     private SerialSendCtrl controller;
 
-    public SerialSendPane(String serialName) {
+    public SerialSendPane() {
         FXMLLoader fxmlLoader = new FXMLLoader(
                 getClass().getResource("/fxml/serial-send-pane.fxml")
         );
@@ -20,7 +20,6 @@ public class SerialSendPane extends SplitPane {
             fxmlLoader.load(); // 加载 fxml
             controller = fxmlLoader.getController(); // 获取逻辑控制器
             controller.setRootPane(this);
-            // controller.setSerialName(serialName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
