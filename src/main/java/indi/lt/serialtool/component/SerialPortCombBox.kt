@@ -58,7 +58,7 @@ class SerialPortCombBox : ComboBox<String?>() {
      * @param timeOutMode      超时模式
      */
     fun init(
-        keyLastSerial: String,
+        keyLastSerial: String?,
         baudRateSupplier: Supplier<Int>?,
         activeProperty: BooleanProperty,
         timeOutMode: Int,

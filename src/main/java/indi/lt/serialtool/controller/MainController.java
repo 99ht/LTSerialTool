@@ -8,13 +8,12 @@ import indi.lt.serialtool.view.AsciiStage;
 import indi.lt.serialtool.view.SerialReceivePane;
 import indi.lt.serialtool.view.SerialSendPane;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SplitPane;
@@ -25,9 +24,7 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -42,6 +39,7 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import static indi.lt.serialtool.global.ConfigManager.KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS;
+import static org.kordamp.ikonli.material2.Material2OutlinedAL.ADD_BOX;
 import static org.kordamp.ikonli.material2.Material2OutlinedAL.ASSIGNMENT;
 import static org.kordamp.ikonli.material2.Material2OutlinedAL.INFO;
 import static org.kordamp.ikonli.material2.Material2OutlinedAL.INVERT_COLORS;
@@ -63,6 +61,7 @@ public class MainController implements Initializable {
     public MenuButton mbSetting;
     public MenuButton mbTools;
     public MenuButton mbHelp;
+    public Button mbNewTab;
 
     @FXML
     private BorderPane rootPane;
@@ -112,6 +111,7 @@ public class MainController implements Initializable {
             item.prefWidth(14);
             item.prefHeight(14);
         }
+        mbNewTab.setGraphic(new FontIcon(ADD_BOX));
         mbFile.setGraphic(new FontIcon(ASSIGNMENT));
         mbSetting.setGraphic(new FontIcon(SETTINGS));
         mbTheme.setGraphic(new FontIcon(INVERT_COLORS));
@@ -169,5 +169,15 @@ public class MainController implements Initializable {
     @FXML
     public void openAsciiTable(ActionEvent actionEvent) {
         AsciiStage.showStage();
+    }
+
+    @FXML
+    public void addNewTab(ActionEvent actionEvent) {
+        ObservableList<Tab> tabs = tabRootPane.getTabs();
+        SerialReceivePane serialReceivePane = new SerialReceivePane("串口接收" + tabs.size(), "");
+        Tab tab = new Tab("串口接收" + tabs.size());
+        tab.setContent(serialReceivePane);
+        tabs.add(tab);
+        tabRootPane.getSelectionModel().select(tab);
     }
 }

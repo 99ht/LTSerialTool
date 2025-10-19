@@ -10,6 +10,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 
+/**
+ * 保存键值对
+ */
 object ConfigManager {
     private val LOG: Logger = LogManager.getLogger(ConfigManager::class.java)
 

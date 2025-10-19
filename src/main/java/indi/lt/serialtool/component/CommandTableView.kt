@@ -115,6 +115,8 @@ class CommandTableView : TableView<CommandItem?>(FXCollections.observableArrayLi
                         .addListener { _: ObservableValue<out String>?, oldV: String?, newV: String ->
                             if (!newV.matches("\\d*".toRegex())) {
                                 intervalField.text = oldV
+                            } else {
+                                item?.setInterval(newV.toInt())
                             }
                         }
                 }

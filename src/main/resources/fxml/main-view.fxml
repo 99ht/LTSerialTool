@@ -7,6 +7,7 @@
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.Button?>
 <BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.MainController">
     <center>
@@ -16,6 +17,8 @@
     <left>
         <ToolBar fx:id="toolBar" orientation="VERTICAL" BorderPane.alignment="CENTER">
             <items>
+                <Button fx:id="mbNewTab" mnemonicParsing="false" onAction="#addNewTab">
+                </Button>
                 <MenuButton fx:id="mbFile" mnemonicParsing="false">
                     <items>
                         <MenuItem mnemonicParsing="false" text="保存为压缩包">
