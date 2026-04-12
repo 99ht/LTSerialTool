@@ -15,8 +15,6 @@ import javafx.stage.Stage;
  */
 public class MainStage extends BaseStage {
 
-    private final Stage stage;
-
     public MainStage() {
         String x = ConfigManager.get("window.x");
         String y = ConfigManager.get("window.y");
@@ -24,9 +22,9 @@ public class MainStage extends BaseStage {
         double height = Double.parseDouble(ConfigManager.get("window.height", "600"));
         boolean isMaximized = Boolean.parseBoolean(ConfigManager.get("window.isMaximized", "false"));
 
-        stage = getStage();
-        stage.setWidth(width);
-        stage.setHeight(height);
+        getHeaderBar().setPrefHeight(0);
+        setWidth(width);
+        setHeight(height);
         if (isMaximized) {
             Platform.runLater(() -> setMaximized(true));
         } else {
@@ -34,11 +32,11 @@ public class MainStage extends BaseStage {
             setMinHeight(600);
         }
 
-        stage.setX(Double.parseDouble(x));
-        stage.setY(Double.parseDouble(y));
+        setX(Double.parseDouble(x));
+        setY(Double.parseDouble(y));
 
-        Button pinButton = UIFactory.createPinButton(stage);
+        Button pinButton = UIFactory.createPinButton(this);
         Tooltip.install(pinButton, new Tooltip("窗口置顶"));
-        getSystemButtons().add(0, pinButton);
+        getSystemButtons().addFirst(pinButton);
     }
 }

@@ -8,7 +8,11 @@ import indi.lt.serialtool.global.ConfigManager;
 import indi.lt.serialtool.view.MainStage;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import javafx.scene.layout.HeaderBar;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,7 +43,15 @@ public class SerialApplication extends AutoReleaseApplication {
 
         MainStage appStage = new MainStage();
         appStage.setTitle("LTSerialTool-v2.16.0");
-        appStage.setContentView(root);
+
+        StackPane rootPane = new StackPane(root);
+        HeaderBar headerBar = appStage.getHeaderBar();
+        headerBar.setViewOrder(-1);
+        headerBar.setMaxWidth(Region.USE_PREF_SIZE);
+        headerBar.setMaxHeight(Region.USE_PREF_SIZE);
+        StackPane.setAlignment(headerBar, Pos.TOP_RIGHT);
+        rootPane.getChildren().add(headerBar);
+        appStage.setContentView(rootPane);
         // 现在 controller 已经不是 null 了，且其 @FXML 成员已注入
         appStage.registryDragger(controller.getMenuBar());
 

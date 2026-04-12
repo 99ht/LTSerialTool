@@ -1,4 +1,5 @@
 import io.github.fvarrui.javapackager.gradle.PackageTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
@@ -14,7 +15,7 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.1.0'
-    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.jvm' version '2.1.0'
 }
 
 apply plugin: 'io.github.fvarrui.javapackager.plugin'
@@ -31,22 +32,42 @@ repositories {
 ext {
     junitVersion = '5.10.0'
     versions = [
-            'jfx': '21.0.3'
+            'jfx': '25.0.2'
     ]
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(23)
+    }
+    sourceCompatibility = JavaVersion.VERSION_23
+    targetCompatibility = JavaVersion.VERSION_23
+}
 
-tasks.withType(JavaCompile) {
+
+kotlin {
+    jvmToolchain(23)
+}
+
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+tasks.withType(KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = '23'
+    }
+}
+
+
 application {
     mainClass = 'indi.lt.serialtool.Main'
+    applicationDefaultJvmArgs = ["--enable-preview", "-Djavafx.enablePreview=true"]
 }
 
 javafx {
     version = "${versions.jfx}"
-    modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics','javafx.swing']
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics', 'javafx.swing']
 }
 
 def os = org.gradle.internal.os.OperatingSystem.current()
@@ -60,14 +81,14 @@ dependencies {
     implementation('org.kordamp.ikonli:ikonli-javafx:12.3.1')
     implementation "org.kordamp.ikonli:ikonli-materialdesign2-pack:12.3.1"
 
-    implementation('io.github.nonoas:jfx-flat-ui:1.0.3')
+    implementation 'io.github.nonoas:jfx-flat-ui:2.0.0-SNAPSHOT'
     implementation('com.fazecast:jSerialComm:2.10.4')
     implementation('org.apache.logging.log4j:log4j-core:2.20.0')
     implementation 'com.google.code.gson:gson:2.11.0'
 
     implementation 'com.h2database:h2:2.2.220'
     implementation 'io.github.mkpaz:atlantafx-base:2.0.1'
-    implementation "org.fxmisc.richtext:richtextfx:0.11.1"
+    implementation "org.fxmisc.richtext:richtextfx:0.11.7"
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
@@ -96,6 +117,10 @@ tasks.register('packageMyApp', PackageTask) {
                // 这个模块没有的话，访问不了https
                "jdk.crypto.ec"
     ]
+    vmArgs = [
+            "-Djavafx.enablePreview=true",
+            "--add-exports=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED"
+    ]
     bundleJre = true
     generateInstaller = false
     // 是否需要管理员权限
@@ -103,3 +128,4 @@ tasks.register('packageMyApp', PackageTask) {
     winConfig { createZipball = true }
 
 }
+
