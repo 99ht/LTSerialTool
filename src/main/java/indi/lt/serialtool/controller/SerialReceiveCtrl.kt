@@ -276,8 +276,10 @@ class SerialReceiveCtrl : Initializable {
     }
 
     private fun closeSelectSerial() {
-        cbSerialList.closeSelectSerial()
+        // 先取消读取服务，避免先关串口导致 read 线程报误错误日志
         serialReadService?.cancel()
+        serialReadService = null
+        cbSerialList.closeSelectSerial()
     }
 
     private fun initBautRateList() {

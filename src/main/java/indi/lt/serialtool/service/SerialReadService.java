@@ -8,7 +8,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.scene.control.CheckBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,11 +30,12 @@ import java.util.function.Consumer;
  * 串口读取服务：
  * - 按 UTF-8 增量解码，避免多字节拆包导致乱码
  * - 按行切分，统一使用 '\n' 结尾；支持 \r\n
- * - 追加到 InlineCssTextArea 后按“最大行数”裁剪（段落级，性能更好）
- * - 可选集成高亮器：每次追加/裁剪后调度一次高亮刷新
+ * - 每行独立生成日志对象，避免多行被合并成一条
+ * - 可选集成高亮器：每次追加后调度一次高亮刷新
  */
 public class SerialReadService extends Service<LogText> {
     private static final Logger LOG = LogManager.getLogger(SerialReadService.class);
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
     private final SerialPort comPort;
     private final PromptInlineCssTextArea targetTextArea;
@@ -69,27 +69,30 @@ public class SerialReadService extends Service<LogText> {
      */
     private Consumer<Long> onRecvBytesChanged;
 
-    // —— 构造 —— //
-
     public SerialReadService(SerialPort comPort,
                              PromptInlineCssTextArea targetTextArea,
                              BooleanProperty timeStampDisplayProperty,
                              HighlighterScheduler highlighter) {
         this(comPort, targetTextArea, timeStampDisplayProperty, highlighter, false);
     }
+
     public SerialReadService(SerialPort comPort,
                              PromptInlineCssTextArea targetTextArea,
                              BooleanProperty timeStampDisplayProperty,
                              HighlighterScheduler highlighter,
                              boolean showLogType) {
         this.comPort = Objects.requireNonNull(comPort);
-        this.targetTextArea = targetTextArea;
+        this.targetTextArea = Objects.requireNonNull(targetTextArea);
         this.timeStampDisplayProperty.bind(timeStampDisplayProperty);
         this.highlighterScheduler = highlighter;
 
         valueProperty().addListener((observable, oldValue, newValue) -> {
+            // Service 结束时 value 可能为 null，避免监听器 NPE
+            if (newValue == null) {
+                return;
+            }
             String logText = newValue.getLogText(timeStampDisplayProperty.get(), showLogType);
-            targetTextArea.appendText(logText + "\n");
+            appendText(logText + "\n");
         });
     }
 
@@ -98,20 +101,22 @@ public class SerialReadService extends Service<LogText> {
         return new Task<>() {
             @Override
             protected LogText call() {
-                try (InputStream in = comPort.getInputStream()) {
+                // updateValue(...) 只能在 Task 内调用，这里用 Consumer 传给解码流程
+                Consumer<String> lineEmitter = line -> updateValue(formatLine(line));
 
-                    // UTF-8 增量解码器：跨包安全
+                try (InputStream in = comPort.getInputStream()) {
+                    // UTF-8 增量解码器
                     CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder()
                             .onMalformedInput(CodingErrorAction.REPLACE)
                             .onUnmappableCharacter(CodingErrorAction.REPLACE);
 
                     byte[] rawBuf = new byte[READ_BUF_SIZE];
+                    // byteBuf 会保留“未解码完成的尾字节”，跨 read() 继续解码
                     ByteBuffer byteBuf = ByteBuffer.allocate(READ_BUF_SIZE * 2);
                     CharBuffer charBuf = CharBuffer.allocate(READ_BUF_SIZE * 2);
 
-                    // 行与 UI 批量缓冲
+                    // 行缓冲：保证每行单独输出、单独时间戳
                     StringBuilder lineBuf = new StringBuilder();
-                    StringBuilder uiBatch = new StringBuilder();
 
                     while (!isCancelled()) {
                         int n = in.read(rawBuf);
@@ -124,32 +129,22 @@ public class SerialReadService extends Service<LogText> {
                             onRecvBytesChanged.accept(totalBytes);
                         }
 
-                        // 解码
-                        byteBuf.clear();
-                        byteBuf.put(rawBuf, 0, n).flip();
-                        while (byteBuf.hasRemaining()) {
-                            CoderResult cr = decoder.decode(byteBuf, charBuf, false);
-                            charBuf.flip();
-                            if (charBuf.hasRemaining()) {
-                                feedChars(charBuf, lineBuf, uiBatch);
-                                charBuf.clear();
-                            }
-                            if (cr.isError()) cr.throwException();
-                            if (cr.isUnderflow()) break;
-                        }
+                        byteBuf = ensureWritable(byteBuf, n);
+                        byteBuf.put(rawBuf, 0, n);
+                        byteBuf.flip();
 
-                        // 批量刷 UI
-                        if (!uiBatch.isEmpty()) {
-                            String batch = uiBatch.toString();
-                            uiBatch.setLength(0);
-                            updateValue(formatLine(batch));
-                        }
+                        // 增量解码：未消费字节通过 compact() 留给下一次 read
+                        decodeBuffer(decoder, byteBuf, charBuf, lineBuf, false, lineEmitter);
+                        byteBuf.compact();
                     }
 
-                    // 收尾：如果还有未结束的一行（无换行结尾）
+                    // 收尾：flush 解码器内部状态，避免尾部字符丢失
+                    byteBuf.flip();
+                    decodeBuffer(decoder, byteBuf, charBuf, lineBuf, true, lineEmitter);
+
+                    // 如果最后一行没有换行符，也按一行输出
                     if (!lineBuf.isEmpty()) {
-                        LogText leftover = formatLine(lineBuf.toString());
-                        updateValue(leftover);
+                        lineEmitter.accept(lineBuf.toString());
                     }
                 } catch (CharacterCodingException e) {
                     LOG.error("UTF-8 decoding error", e);
@@ -167,7 +162,7 @@ public class SerialReadService extends Service<LogText> {
 
     private void tryClosePort() {
         try {
-            if (comPort != null && comPort.isOpen()) {
+            if (comPort.isOpen()) {
                 comPort.closePort();
             }
         } catch (Exception ex) {
@@ -177,14 +172,16 @@ public class SerialReadService extends Service<LogText> {
 
     private void appendText(String batch) {
         targetTextArea.appendText(batch);
-        if (highlighterScheduler != null) highlighterScheduler.schedule();
+        if (highlighterScheduler != null) {
+            highlighterScheduler.schedule();
+        }
     }
 
     /**
-     * 将解码后的字符流按行切分追加到 uiBatch。
+     * 将解码后的字符流按行切分并逐行投递。
      * 支持 \n 与 \r\n；统一以 '\n' 结尾。
      */
-    private void feedChars(CharBuffer chars, StringBuilder lineBuf, StringBuilder uiBatch) {
+    private void feedChars(CharBuffer chars, StringBuilder lineBuf, Consumer<String> lineEmitter) {
         while (chars.hasRemaining()) {
             char c = chars.get();
             if (c == '\n') {
@@ -193,12 +190,72 @@ public class SerialReadService extends Service<LogText> {
                 if (end > 0 && lineBuf.charAt(end - 1) == '\r') {
                     lineBuf.setLength(end - 1);
                 }
-                uiBatch.append(formatLine(lineBuf.toString()).getText());
+                lineEmitter.accept(lineBuf.toString());
                 lineBuf.setLength(0);
             } else {
                 lineBuf.append(c);
             }
         }
+    }
+
+    /**
+     * 执行一次解码流程；endOfInput=true 时会额外 flush 解码器。
+     */
+    private void decodeBuffer(CharsetDecoder decoder,
+                              ByteBuffer byteBuf,
+                              CharBuffer charBuf,
+                              StringBuilder lineBuf,
+                              boolean endOfInput,
+                              Consumer<String> lineEmitter) throws CharacterCodingException {
+        while (true) {
+            CoderResult cr = decoder.decode(byteBuf, charBuf, endOfInput);
+            charBuf.flip();
+            if (charBuf.hasRemaining()) {
+                feedChars(charBuf, lineBuf, lineEmitter);
+            }
+            charBuf.clear();
+
+            if (cr.isError()) cr.throwException();
+            if (cr.isOverflow()) continue;
+            if (cr.isUnderflow()) break;
+        }
+
+        if (!endOfInput) {
+            return;
+        }
+
+        while (true) {
+            CoderResult cr = decoder.flush(charBuf);
+            charBuf.flip();
+            if (charBuf.hasRemaining()) {
+                feedChars(charBuf, lineBuf, lineEmitter);
+            }
+            charBuf.clear();
+
+            if (cr.isError()) cr.throwException();
+            if (cr.isOverflow()) continue;
+            if (cr.isUnderflow()) break;
+        }
+    }
+
+    /**
+     * 确保 byteBuf 有足够空间写入新字节，不足时按 2 倍扩容。
+     */
+    private ByteBuffer ensureWritable(ByteBuffer buffer, int incomingBytes) {
+        if (buffer.remaining() >= incomingBytes) {
+            return buffer;
+        }
+
+        int newCap = buffer.capacity();
+        int minRequired = buffer.position() + incomingBytes;
+        while (newCap < minRequired) {
+            newCap <<= 1;
+        }
+
+        ByteBuffer enlarged = ByteBuffer.allocate(newCap);
+        buffer.flip();
+        enlarged.put(buffer);
+        return enlarged;
     }
 
     @Override
@@ -209,11 +266,14 @@ public class SerialReadService extends Service<LogText> {
 
     @Override
     public boolean cancel() {
-        if (super.cancel()) {
-            LOG.info("串口 [" + comPort + "] 读取服务关闭");
+        boolean cancelled = super.cancel();
+        // 主动关闭串口，确保阻塞 read() 能尽快退出
+        tryClosePort();
+        if (cancelled) {
+            LOG.info("串口 [{}] 读取服务关闭", comPort);
             return true;
         }
-        LOG.error("串口 [" + comPort + "] 读取服务失败");
+        LOG.error("串口 [{}] 读取服务失败", comPort);
         return false;
     }
 
@@ -242,10 +302,10 @@ public class SerialReadService extends Service<LogText> {
     }
 
     /**
-     * 根据是否带时间戳，格式化一行，并追加换行符。
+     * 根据是否带时间戳，格式化一行。
      */
     private LogText formatLine(String raw) {
-        String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
+        String ts = LocalDateTime.now().format(TIME_FORMATTER);
         return new LogText(ts, raw, LogType.RECEIVE);
     }
 }
