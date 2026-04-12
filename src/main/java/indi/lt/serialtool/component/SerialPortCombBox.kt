@@ -197,8 +197,8 @@ class SerialPortCombBox : ComboBox<String?>() {
                 // 获取当前设置
                 val settings = serialPortSettingsProperty.get() ?: SerialPortSettings()
 
-                // 使用自定义设置或波特率提供者的值
-                val baudRate = baudRateSupplier?.get() ?: settings.baudRate
+                // 使用设置对话框中的波特率（优先），如果没有则使用波特率提供者的值
+                val baudRate = settings.baudRate
                 selectedPort!!.setComPortParameters(
                     baudRate,
                     settings.dataBits,
@@ -219,7 +219,7 @@ class SerialPortCombBox : ComboBox<String?>() {
 
                 // 5️⃣ 打印结果并保存配置
                 if (opened) {
-                    LOG.info("串口已打开: " + selectedPort!!.systemPortName + " @ " + baudRateSupplier!!.get())
+                    LOG.info("串口已打开: " + selectedPort!!.systemPortName + " @ " + settings.baudRate + " bps, 数据位:" + settings.dataBits + ", 停止位:" + SerialPortSettings.getStopBitsText(settings.stopBits) + ", 校验:" + SerialPortSettings.getParityText(settings.parity))
                     ConfigManager.set(keyLastSerial, selectedSerialFinal)
                 } else {
                     LOG.error("串口打开失败: " + selectedPort!!.systemPortName)

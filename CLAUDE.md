@@ -105,24 +105,6 @@ mvn test -Dtest=TestClassName#testMethodName
    - 控制器根据需要选择 Kotlin 或 Java
    - 注意 Kotlin 和 Java 之间的互操作性
 
-## 常见任务
-
-### 添加新功能
-1. 在 FXML 中添加新组件
-2. 在控制器中注入组件
-3. 实现业务逻辑
-4. 测试功能
-
-### 修改串口参数
-1. 修改 `SerialPortSettings` 类
-2. 更新 `SerialPortCombBox` 的参数设置逻辑
-3. 在控制器中调用参数设置对话框
-
-### 添加新的串口设置项
-1. 扩展 `SerialPortSettings` 类
-2. 更新 `SerialSettingsDialogCtrl` 控制器
-3. 修改 FXML 布局
-4. 更新 `SerialPortCombBox` 的参数应用逻辑
 
 ## 已知问题
 
@@ -131,6 +113,5 @@ mvn test -Dtest=TestClassName#testMethodName
 - 高波特率可能导致数据丢失
 
 ## 固定规则
-- 每次执行任务之前叫我一声大哥
-- 尽量使用纯java代码，而不用使用fxml
+- 尽量使用纯java代码，禁止添加新的fxml文件
 - 新增功能不要影响现有功能，如果需要影响，请向我确认

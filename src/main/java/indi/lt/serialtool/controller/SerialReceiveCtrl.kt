@@ -92,7 +92,7 @@ class SerialReceiveCtrl : Initializable {
      */
     private fun initSerialPortSettings() {
         // 从配置加载串口参数设置
-        serialPortSettings = ConfigManager.get(KEY_SERIAL_SETTINGS, SerialPortSettings::class.java, SerialPortSettings.createDefault())
+        serialPortSettings = ConfigManager.getObject(KEY_SERIAL_SETTINGS, SerialPortSettings::class.java, SerialPortSettings.createDefault())
 
         // 应用设置到串口组件
         cbSerialList.setSerialPortSettings(serialPortSettings)
@@ -134,8 +134,7 @@ class SerialReceiveCtrl : Initializable {
             dialog.title = "串口参数设置"
             dialog.headerText = "自定义串口参数"
 
-            // 设置按钮
-            dialog.dialogPane.buttonTypes.addAll(ButtonType.OK, ButtonType.CANCEL)
+            // 注意：FXML 中已经定义了按钮，不需要再次添加
 
             // 处理 OK 按钮
             dialog.resultConverter = Callback<ButtonType, SerialPortSettings> { buttonType ->
@@ -152,10 +151,13 @@ class SerialReceiveCtrl : Initializable {
             dialog.showAndWait().ifPresent { settings ->
                 // 保存设置
                 serialPortSettings = settings
-                ConfigManager.set(KEY_SERIAL_SETTINGS, settings)
+                ConfigManager.setObject(KEY_SERIAL_SETTINGS, settings)
 
                 // 应用设置到串口组件
                 cbSerialList.setSerialPortSettings(settings)
+
+                // 同步波特率到主界面下拉框（如果设置中有指定波特率）
+                cbBautRateList.selectionModel.select(settings.baudRate)
 
                 // 显示成功提示
                 UIUtil.showToast("串口参数已更新")

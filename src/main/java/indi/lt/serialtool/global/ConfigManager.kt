@@ -1,5 +1,6 @@
 package indi.lt.serialtool.global
 
+import com.google.gson.Gson
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File
@@ -20,6 +21,7 @@ object ConfigManager {
     private val CONFIG_FILE = "$CONFIG_DIR${File.separator}config.properties"
 
     private val props = Properties()
+    private val gson = Gson()
 
     // 常量定义
     const val KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS: String = "receive.splitPane.dividerPositions"
@@ -118,6 +120,38 @@ object ConfigManager {
             }
         } else {
             null
+        }
+    }
+
+    /**
+     * 将对象序列化为 JSON 并保存
+     */
+    @JvmStatic
+    fun <T> setObject(key: String?, value: T) {
+        try {
+            val json = gson.toJson(value)
+            props.setProperty(key, json)
+            save()
+        } catch (e: Exception) {
+            LOG.error("Failed to serialize object for key: $key", e)
+        }
+    }
+
+    /**
+     * 从 JSON 反序列化对象
+     */
+    @JvmStatic
+    fun <T> getObject(key: String?, clazz: Class<T>, defaultValue: T): T {
+        val json = props.getProperty(key)
+        return if (json != null) {
+            try {
+                gson.fromJson(json, clazz)
+            } catch (e: Exception) {
+                LOG.error("Failed to deserialize object for key: $key", e)
+                defaultValue
+            }
+        } else {
+            defaultValue
         }
     }
 }
