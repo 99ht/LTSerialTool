@@ -22,7 +22,6 @@ import indi.lt.serialtool.utils.UIUtil;
 import indi.lt.serialtool.view.BaseStage;
 import indi.lt.serialtool.view.SerialSendPane;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -32,7 +31,6 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
@@ -44,6 +42,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -80,6 +79,8 @@ public class SerialSendCtrl implements Initializable {
     private CheckBox cbHexDisplay;
     @FXML
     private CheckBox cbTimeStampDisplay;
+    @FXML
+    private CheckBox cbHexSend;
     @FXML
     private CheckBox cbIsHex;
 
@@ -242,7 +243,8 @@ public class SerialSendCtrl implements Initializable {
             serialReadService = new SerialReadService(
                     cbSerialList.getSelectedPort(),
                     taRecvArea,
-                    new SimpleBooleanProperty(true),
+                    cbTimeStampDisplay.selectedProperty(),
+                    cbHexDisplay.selectedProperty(),
                     () -> highlighter.schedule(),
                     true
             );
@@ -339,17 +341,32 @@ public class SerialSendCtrl implements Initializable {
             return;
         }
 
-        if (lineBreak.isSelected()) {
-            text += "\n";
-        }
-
         try {
-            byte[] data = cbIsHex.isSelected() ? StringUtil.hexStringToBytes(text.trim()) : text.getBytes();
+            boolean isHexSend = cbHexSend.isSelected();
+            byte[] data;
+            String logText;
+
+            if (isHexSend) {
+                data = StringUtil.hexStringToBytes(text);
+                if (lineBreak.isSelected()) {
+                    data = Arrays.copyOf(data, data.length + 1);
+                    data[data.length - 1] = (byte) '\n';
+                }
+                logText = StringUtil.bytesToHexString(data);
+            } else {
+                String content = lineBreak.isSelected() ? text + "\n" : text;
+                data = content.getBytes(StandardCharsets.UTF_8);
+                logText = content;
+            }
+
             cbSerialList.getSelectedPort().writeBytes(data, data.length);
-            LOG.info("发送成功: " + text);
+            LOG.info("发送成功: {}", logText);
             String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
-            LogText logText = new LogText(ts, text, LogType.SEND);
-            taRecvArea.appendText(logText.getLogText(cbTimeStampDisplay.isSelected(), true) + "\r\n");
+            LogText sendLog = new LogText(ts, logText, LogType.SEND);
+            taRecvArea.appendText(sendLog.getLogText(cbTimeStampDisplay.isSelected(), true) + "\r\n");
+        } catch (IllegalArgumentException e) {
+            LOG.error("HEX 发送失败", e);
+            ToastQueue.show(AppState.getStage(), "HEX格式错误: " + e.getMessage(), 1200);
         } catch (Exception e) {
             LOG.error("发送失败", e);
             ToastQueue.show(AppState.getStage(), "发送失败: " + e.getMessage(), 1000);
@@ -411,3 +428,6 @@ public class SerialSendCtrl implements Initializable {
         taRecvArea.getArea().clear();
     }
 }
+
+
+

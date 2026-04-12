@@ -62,6 +62,9 @@ class SerialReceiveCtrl : Initializable {
     private lateinit var cbTimeDisplay: CheckBox
 
     @FXML
+    private lateinit var cbHexDisplay: CheckBox
+
+    @FXML
     private lateinit var tfKeyWord: TextField
 
     @FXML
@@ -242,7 +245,10 @@ class SerialReceiveCtrl : Initializable {
                 patternTextProperty().bind(tfKeyWord.textProperty())
             }
             serialReadService = SerialReadService(
-                cbSerialList.selectedPort, textAreaOrigin, cbTimeDisplay.selectedProperty()
+                cbSerialList.selectedPort,
+                textAreaOrigin,
+                cbTimeDisplay.selectedProperty(),
+                cbHexDisplay.selectedProperty()
             ) { highlighter?.schedule() }.also {
                 it.setOnRecvBytesChanged { bytes ->
                     Platform.runLater {
@@ -314,3 +320,6 @@ class SerialReceiveCtrl : Initializable {
         }
     }
 }
+
+
+

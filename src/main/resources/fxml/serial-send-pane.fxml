@@ -52,7 +52,7 @@
                                         <CheckBox fx:id="cbHexDisplay" maxHeight="1.7976931348623157E308"
                                                   mnemonicParsing="false" text="HEX显示"/>
                                         <Region minWidth="0.0" VBox.vgrow="ALWAYS"/>
-                                        <CheckBox maxHeight="1.7976931348623157E308" mnemonicParsing="false"
+                                        <CheckBox fx:id="cbHexSend" maxHeight="1.7976931348623157E308" mnemonicParsing="false"
                                                   text="HEX发送"/>
                                         <Region VBox.vgrow="ALWAYS"/>
                                         <CheckBox fx:id="lineBreak" maxHeight="1.7976931348623157E308"
@@ -126,3 +126,5 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 </fx:root>
+
+

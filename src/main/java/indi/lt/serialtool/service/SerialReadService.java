@@ -4,6 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import indi.lt.serialtool.component.PromptInlineCssTextArea;
 import indi.lt.serialtool.constant.LogType;
 import indi.lt.serialtool.data.LogText;
+import indi.lt.serialtool.utils.StringUtil;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Service;
@@ -28,7 +29,8 @@ import java.util.function.Consumer;
 
 /**
  * 串口读取服务：
- * - 按 UTF-8 增量解码，避免多字节拆包导致乱码
+ * - 文本模式：按 UTF-8 增量解码，避免多字节拆包导致乱码
+ * - HEX 模式：按原始字节转十六进制显示
  * - 按行切分，统一使用 '\n' 结尾；支持 \r\n
  * - 每行独立生成日志对象，避免多行被合并成一条
  * - 可选集成高亮器：每次追加后调度一次高亮刷新
@@ -60,6 +62,11 @@ public class SerialReadService extends Service<LogText> {
     private final SimpleBooleanProperty timeStampDisplayProperty = new SimpleBooleanProperty(false);
 
     /**
+     * 是否 HEX 显示
+     */
+    private final SimpleBooleanProperty hexDisplayProperty = new SimpleBooleanProperty(false);
+
+    /**
      * 接收字节数统计
      */
     private final AtomicLong recvBytesCount = new AtomicLong(0);
@@ -73,7 +80,7 @@ public class SerialReadService extends Service<LogText> {
                              PromptInlineCssTextArea targetTextArea,
                              BooleanProperty timeStampDisplayProperty,
                              HighlighterScheduler highlighter) {
-        this(comPort, targetTextArea, timeStampDisplayProperty, highlighter, false);
+        this(comPort, targetTextArea, timeStampDisplayProperty, null, highlighter, false);
     }
 
     public SerialReadService(SerialPort comPort,
@@ -81,9 +88,29 @@ public class SerialReadService extends Service<LogText> {
                              BooleanProperty timeStampDisplayProperty,
                              HighlighterScheduler highlighter,
                              boolean showLogType) {
+        this(comPort, targetTextArea, timeStampDisplayProperty, null, highlighter, showLogType);
+    }
+
+    public SerialReadService(SerialPort comPort,
+                             PromptInlineCssTextArea targetTextArea,
+                             BooleanProperty timeStampDisplayProperty,
+                             BooleanProperty hexDisplayProperty,
+                             HighlighterScheduler highlighter) {
+        this(comPort, targetTextArea, timeStampDisplayProperty, hexDisplayProperty, highlighter, false);
+    }
+
+    public SerialReadService(SerialPort comPort,
+                             PromptInlineCssTextArea targetTextArea,
+                             BooleanProperty timeStampDisplayProperty,
+                             BooleanProperty hexDisplayProperty,
+                             HighlighterScheduler highlighter,
+                             boolean showLogType) {
         this.comPort = Objects.requireNonNull(comPort);
         this.targetTextArea = Objects.requireNonNull(targetTextArea);
         this.timeStampDisplayProperty.bind(timeStampDisplayProperty);
+        if (hexDisplayProperty != null) {
+            this.hexDisplayProperty.bind(hexDisplayProperty);
+        }
         this.highlighterScheduler = highlighter;
 
         valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -105,10 +132,7 @@ public class SerialReadService extends Service<LogText> {
                 Consumer<String> lineEmitter = line -> updateValue(formatLine(line));
 
                 try (InputStream in = comPort.getInputStream()) {
-                    // UTF-8 增量解码器
-                    CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder()
-                            .onMalformedInput(CodingErrorAction.REPLACE)
-                            .onUnmappableCharacter(CodingErrorAction.REPLACE);
+                    CharsetDecoder decoder = createUtf8Decoder();
 
                     byte[] rawBuf = new byte[READ_BUF_SIZE];
                     // byteBuf 会保留“未解码完成的尾字节”，跨 read() 继续解码
@@ -117,6 +141,7 @@ public class SerialReadService extends Service<LogText> {
 
                     // 行缓冲：保证每行单独输出、单独时间戳
                     StringBuilder lineBuf = new StringBuilder();
+                    boolean previousHexDisplay = hexDisplayProperty.get();
 
                     while (!isCancelled()) {
                         int n = in.read(rawBuf);
@@ -129,22 +154,37 @@ public class SerialReadService extends Service<LogText> {
                             onRecvBytesChanged.accept(totalBytes);
                         }
 
-                        byteBuf = ensureWritable(byteBuf, n);
-                        byteBuf.put(rawBuf, 0, n);
-                        byteBuf.flip();
+                        boolean hexMode = hexDisplayProperty.get();
+                        if (hexMode) {
+                            if (!previousHexDisplay) {
+                                flushTextTail(decoder, byteBuf, charBuf, lineBuf, lineEmitter);
+                                decoder = createUtf8Decoder();
+                            }
+                            lineEmitter.accept(StringUtil.bytesToHexString(rawBuf, n));
+                        } else {
+                            if (previousHexDisplay) {
+                                // 从 HEX 切回文本模式后，重置解码器状态，避免跨模式污染
+                                decoder = createUtf8Decoder();
+                                byteBuf.clear();
+                                charBuf.clear();
+                                lineBuf.setLength(0);
+                            }
 
-                        // 增量解码：未消费字节通过 compact() 留给下一次 read
-                        decodeBuffer(decoder, byteBuf, charBuf, lineBuf, false, lineEmitter);
-                        byteBuf.compact();
+                            byteBuf = ensureWritable(byteBuf, n);
+                            byteBuf.put(rawBuf, 0, n);
+                            byteBuf.flip();
+
+                            // 增量解码：未消费字节通过 compact() 留给下一次 read
+                            decodeBuffer(decoder, byteBuf, charBuf, lineBuf, false, lineEmitter);
+                            byteBuf.compact();
+                        }
+
+                        previousHexDisplay = hexMode;
                     }
 
-                    // 收尾：flush 解码器内部状态，避免尾部字符丢失
-                    byteBuf.flip();
-                    decodeBuffer(decoder, byteBuf, charBuf, lineBuf, true, lineEmitter);
-
-                    // 如果最后一行没有换行符，也按一行输出
-                    if (!lineBuf.isEmpty()) {
-                        lineEmitter.accept(lineBuf.toString());
+                    // 收尾：文本模式下 flush 解码器内部状态，避免尾部字符丢失
+                    if (!previousHexDisplay) {
+                        flushTextTail(decoder, byteBuf, charBuf, lineBuf, lineEmitter);
                     }
                 } catch (CharacterCodingException e) {
                     LOG.error("UTF-8 decoding error", e);
@@ -158,6 +198,29 @@ public class SerialReadService extends Service<LogText> {
                 return null;
             }
         };
+    }
+
+    private CharsetDecoder createUtf8Decoder() {
+        return StandardCharsets.UTF_8.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPLACE)
+                .onUnmappableCharacter(CodingErrorAction.REPLACE);
+    }
+
+    private void flushTextTail(CharsetDecoder decoder,
+                               ByteBuffer byteBuf,
+                               CharBuffer charBuf,
+                               StringBuilder lineBuf,
+                               Consumer<String> lineEmitter) throws CharacterCodingException {
+        byteBuf.flip();
+        decodeBuffer(decoder, byteBuf, charBuf, lineBuf, true, lineEmitter);
+
+        if (!lineBuf.isEmpty()) {
+            lineEmitter.accept(lineBuf.toString());
+            lineBuf.setLength(0);
+        }
+
+        byteBuf.clear();
+        charBuf.clear();
     }
 
     private void tryClosePort() {

@@ -7,14 +7,13 @@ import indi.lt.serialtool.component.PromptInlineCssTextArea;
 import indi.lt.serialtool.constant.LogType;
 import indi.lt.serialtool.data.LogText;
 import indi.lt.serialtool.utils.StringUtil;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.scene.control.CheckBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -80,13 +79,22 @@ public class SerialSenderService extends Service<LogText> {
                     Thread.sleep(currentCommand.getInterval());
 
                     try {
-                        String command = currentCommand.getCommand().trim() + "\n";
-                        byte[] data = currentCommand.getCommandType().equals("HEX")
-                                ? StringUtil.hexStringToBytes(command)
-                                : command.getBytes();
+                        String command = currentCommand.getCommand().trim();
+                        boolean isHexCommand = "HEX".equalsIgnoreCase(currentCommand.getCommandType());
+
+                        byte[] data;
+                        if (isHexCommand) {
+                            data = StringUtil.hexStringToBytes(command);
+                        } else {
+                            String text = command + "\n";
+                            data = text.getBytes(StandardCharsets.UTF_8);
+                        }
+
                         serialPort.writeBytes(data, data.length);
-                        LOG.info("已发送: " + currentCommand.getCommand());
-                        updateValue(genLogText(command));
+                        LOG.info("已发送: {}", currentCommand.getCommand());
+
+                        String logBody = cbHexDisplay.isSelected() ? StringUtil.bytesToHexString(data) : command;
+                        updateValue(genLogText(logBody));
                     } catch (Exception e) {
                         LOG.error("指令[{}]发送失败", currentCommand.getCommand(), e);
                     }
