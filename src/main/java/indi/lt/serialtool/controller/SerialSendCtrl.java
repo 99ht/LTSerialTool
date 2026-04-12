@@ -21,6 +21,7 @@ import indi.lt.serialtool.utils.StringUtil;
 import indi.lt.serialtool.utils.UIUtil;
 import indi.lt.serialtool.view.BaseStage;
 import indi.lt.serialtool.view.SerialSendPane;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -146,9 +147,13 @@ public class SerialSendCtrl implements Initializable {
                 toolBar.setMinHeight(40);
                 VBox.setVgrow(rootPane, Priority.ALWAYS);
                 baseStage.registryDragger(toolBar);
+                rootPane.setVisible(false);
                 baseStage.setContentView(new VBox(toolBar, rootPane));
                 // baseStage.setSize(rootPane.getWidth(), rootPane.getHeight() + 40);
-                baseStage.show();
+                Platform.runLater(() -> {
+                    baseStage.show();
+                    rootPane.setVisible(true);
+                });
             } else {
                 // TODO
                 currStage.close();

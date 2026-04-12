@@ -61,7 +61,7 @@ public class MainController implements Initializable {
     @FXML
     private BorderPane rootPane;
 
-    private final SerialSendPane serialSendPane = new SerialSendPane();
+    private final SerialSendPane serialSendPane = SerialSendPane.getInstance();
 
     private final SplitPane spReceive = new SplitPane();
 
@@ -160,7 +160,7 @@ public class MainController implements Initializable {
     @FXML
     public void goToWebsite(ActionEvent actionEvent) {
         try {
-            Desktop.getDesktop().browse(new URI("https://nonoas.github.io/"));
+            Desktop.getDesktop().browse(new URI("https://iggbiaodi.github.io/LTSerialToolWebSite/"));
         } catch (Exception ex) {
             LOG.error(ex);
         }

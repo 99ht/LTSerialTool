@@ -2,7 +2,10 @@ package indi.lt.serialtool.view;
 
 import indi.lt.serialtool.controller.SerialSendCtrl;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.SplitPane;
+import javafx.scene.layout.Pane;
 
 import java.io.IOException;
 
@@ -10,7 +13,9 @@ public class SerialSendPane extends SplitPane {
 
     private SerialSendCtrl controller;
 
-    public SerialSendPane() {
+    private static final SerialSendPane serialSendPane = new SerialSendPane();
+
+    private SerialSendPane() {
         FXMLLoader fxmlLoader = new FXMLLoader(
                 getClass().getResource("/fxml/serial-send-pane.fxml")
         );
@@ -23,5 +28,9 @@ public class SerialSendPane extends SplitPane {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static SerialSendPane getInstance() {
+        return serialSendPane;
     }
 }
