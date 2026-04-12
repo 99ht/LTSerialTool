@@ -31,7 +31,9 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import static indi.lt.serialtool.global.ConfigManager.DEFAULT_RECEIVE_TIMEOUT_MS;
 import static indi.lt.serialtool.global.ConfigManager.KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS;
+import static indi.lt.serialtool.global.ConfigManager.KEY_RECEIVE_TIMEOUT_MS;
 import static org.kordamp.ikonli.material2.Material2OutlinedAL.ADD_BOX;
 import static org.kordamp.ikonli.material2.Material2OutlinedAL.ASSIGNMENT;
 import static org.kordamp.ikonli.material2.Material2OutlinedAL.INFO;
@@ -54,6 +56,10 @@ public class MainController implements Initializable {
     public MenuButton mbSetting;
 
     public CheckMenuItem autoSaveCheck;
+
+    @FXML
+    public MenuItem menuReceiveTimeout;
+
     public MenuButton mbTools;
     public MenuButton mbHelp;
     public Button mbNewTab;
@@ -95,7 +101,7 @@ public class MainController implements Initializable {
 
         Tab tabSend = new Tab("发送模式", serialSendPane);
         tabSend.setClosable(false);
-        tabRootPane.getTabs().addAll(tabSend,tabRec);
+        tabRootPane.getTabs().addAll(tabSend, tabRec);
         tabRootPane.getSelectionModel().select(tabRec);
     }
 
@@ -143,6 +149,55 @@ public class MainController implements Initializable {
             boolean enabled = autoSaveCheck.isSelected();
             System.out.println("自动保存: " + enabled);
         });
+
+        refreshReceiveTimeoutMenuText();
+    }
+
+    @FXML
+    public void setReceiveTimeout(ActionEvent actionEvent) {
+        String currentValue = String.valueOf(getReceiveTimeoutMs());
+        TextInputDialog dialog = new TextInputDialog(currentValue);
+        dialog.setTitle("设置接收超时时间");
+        dialog.setHeaderText("单位：ms。超过该时间未收到回车换行，会输出当前缓存数据。\n修改后新开启的接收串口生效。");
+        dialog.setContentText("超时时间(ms):");
+
+        dialog.showAndWait().ifPresent(input -> {
+            String value = input == null ? "" : input.trim();
+            if (value.isEmpty()) {
+                return;
+            }
+            try {
+                int timeoutMs = Integer.parseInt(value);
+                if (timeoutMs <= 0) {
+                    throw new NumberFormatException("timeoutMs <= 0");
+                }
+                ConfigManager.set(KEY_RECEIVE_TIMEOUT_MS, String.valueOf(timeoutMs));
+                refreshReceiveTimeoutMenuText();
+            } catch (NumberFormatException ex) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("参数错误");
+                alert.setHeaderText("接收超时时间必须是正整数");
+                alert.setContentText("示例: 500 (单位 ms)");
+                alert.showAndWait();
+            }
+        });
+    }
+
+    private int getReceiveTimeoutMs() {
+        String timeout = ConfigManager.get(KEY_RECEIVE_TIMEOUT_MS, String.valueOf(DEFAULT_RECEIVE_TIMEOUT_MS));
+        try {
+            int value = Integer.parseInt(timeout);
+            return value > 0 ? value : DEFAULT_RECEIVE_TIMEOUT_MS;
+        } catch (NumberFormatException ex) {
+            return DEFAULT_RECEIVE_TIMEOUT_MS;
+        }
+    }
+
+    private void refreshReceiveTimeoutMenuText() {
+        if (menuReceiveTimeout == null) {
+            return;
+        }
+        menuReceiveTimeout.setText("设置接收超时时间 (" + getReceiveTimeoutMs() + "ms)");
     }
 
     public String getDividePosition() {

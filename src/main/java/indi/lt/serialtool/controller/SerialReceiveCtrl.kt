@@ -6,8 +6,8 @@ import indi.lt.serialtool.component.PromptInlineCssTextArea
 import indi.lt.serialtool.component.SerialPortCombBox
 import indi.lt.serialtool.component.SerialToggleButton
 import indi.lt.serialtool.data.SerialPortSettings
-import indi.lt.serialtool.service.SerialReadService
 import indi.lt.serialtool.global.ConfigManager
+import indi.lt.serialtool.service.SerialReadService
 import indi.lt.serialtool.utils.UIUtil
 import javafx.application.Platform
 import javafx.beans.Observable
@@ -223,9 +223,11 @@ class SerialReceiveCtrl : Initializable {
 
     fun initSerialComboBoxAction() {
         cbSerialList.init(
-            keyLastSerial, {
-                UIUtil.getSelectedInt(cbBautRateList, 115200)
-            }, btnOpenSerial.selectedProperty(), SerialPort.TIMEOUT_READ_SEMI_BLOCKING
+            keyLastSerial,
+            { UIUtil.getSelectedInt(cbBautRateList, 115200) },
+            btnOpenSerial.selectedProperty(),
+            SerialPort.TIMEOUT_READ_SEMI_BLOCKING,
+            getReceiveTimeoutMs()
         )
     }
 
@@ -234,6 +236,7 @@ class SerialReceiveCtrl : Initializable {
         btnOpenSerial.selectedProperty().addListener { _: ObservableValue<out Boolean>?, _: Boolean?, newVal: Boolean ->
             if (newVal) {
                 btnOpenSerial.isDisable = true
+                cbSerialList.setTimeoutMillis(getReceiveTimeoutMs())
                 cbSerialList.openSelectedSerial()
             } else {
                 closeSelectSerial()
@@ -248,7 +251,8 @@ class SerialReceiveCtrl : Initializable {
                 cbSerialList.selectedPort,
                 textAreaOrigin,
                 cbTimeDisplay.selectedProperty(),
-                cbHexDisplay.selectedProperty()
+                cbHexDisplay.selectedProperty(),
+                getReceiveTimeoutMs()
             ) { highlighter?.schedule() }.also {
                 it.setOnRecvBytesChanged { bytes ->
                     Platform.runLater {
@@ -278,7 +282,21 @@ class SerialReceiveCtrl : Initializable {
             return
         }
         closeSelectSerial()
+        cbSerialList.setTimeoutMillis(getReceiveTimeoutMs())
         cbSerialList.openSelectedSerial()
+    }
+
+    private fun getReceiveTimeoutMs(): Int {
+        val rawTimeout = ConfigManager.get(
+            ConfigManager.KEY_RECEIVE_TIMEOUT_MS,
+            ConfigManager.DEFAULT_RECEIVE_TIMEOUT_MS.toString()
+        )
+        return try {
+            val timeout = rawTimeout.toInt()
+            if (timeout > 0) timeout else ConfigManager.DEFAULT_RECEIVE_TIMEOUT_MS
+        } catch (_: NumberFormatException) {
+            ConfigManager.DEFAULT_RECEIVE_TIMEOUT_MS
+        }
     }
 
     private fun closeSelectSerial() {
@@ -320,6 +338,3 @@ class SerialReceiveCtrl : Initializable {
         }
     }
 }
-
-
-

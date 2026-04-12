@@ -1,6 +1,7 @@
 package indi.lt.serialtool.service;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortTimeoutException;
 import indi.lt.serialtool.component.PromptInlineCssTextArea;
 import indi.lt.serialtool.constant.LogType;
 import indi.lt.serialtool.data.LogText;
@@ -67,6 +68,11 @@ public class SerialReadService extends Service<LogText> {
     private final SimpleBooleanProperty hexDisplayProperty = new SimpleBooleanProperty(false);
 
     /**
+     * 文本模式下，行缓存超时（毫秒）。<= 0 表示不启用超时输出。
+     */
+    private final int lineTimeoutMs;
+
+    /**
      * 接收字节数统计
      */
     private final AtomicLong recvBytesCount = new AtomicLong(0);
@@ -80,7 +86,7 @@ public class SerialReadService extends Service<LogText> {
                              PromptInlineCssTextArea targetTextArea,
                              BooleanProperty timeStampDisplayProperty,
                              HighlighterScheduler highlighter) {
-        this(comPort, targetTextArea, timeStampDisplayProperty, null, highlighter, false);
+        this(comPort, targetTextArea, timeStampDisplayProperty, null, highlighter, 0, false);
     }
 
     public SerialReadService(SerialPort comPort,
@@ -88,7 +94,7 @@ public class SerialReadService extends Service<LogText> {
                              BooleanProperty timeStampDisplayProperty,
                              HighlighterScheduler highlighter,
                              boolean showLogType) {
-        this(comPort, targetTextArea, timeStampDisplayProperty, null, highlighter, showLogType);
+        this(comPort, targetTextArea, timeStampDisplayProperty, null, highlighter, 0, showLogType);
     }
 
     public SerialReadService(SerialPort comPort,
@@ -96,7 +102,16 @@ public class SerialReadService extends Service<LogText> {
                              BooleanProperty timeStampDisplayProperty,
                              BooleanProperty hexDisplayProperty,
                              HighlighterScheduler highlighter) {
-        this(comPort, targetTextArea, timeStampDisplayProperty, hexDisplayProperty, highlighter, false);
+        this(comPort, targetTextArea, timeStampDisplayProperty, hexDisplayProperty, highlighter, 0, false);
+    }
+
+    public SerialReadService(SerialPort comPort,
+                             PromptInlineCssTextArea targetTextArea,
+                             BooleanProperty timeStampDisplayProperty,
+                             BooleanProperty hexDisplayProperty,
+                             int lineTimeoutMs,
+                             HighlighterScheduler highlighter) {
+        this(comPort, targetTextArea, timeStampDisplayProperty, hexDisplayProperty, highlighter, lineTimeoutMs, false);
     }
 
     public SerialReadService(SerialPort comPort,
@@ -104,6 +119,16 @@ public class SerialReadService extends Service<LogText> {
                              BooleanProperty timeStampDisplayProperty,
                              BooleanProperty hexDisplayProperty,
                              HighlighterScheduler highlighter,
+                             boolean showLogType) {
+        this(comPort, targetTextArea, timeStampDisplayProperty, hexDisplayProperty, highlighter, 0, showLogType);
+    }
+
+    public SerialReadService(SerialPort comPort,
+                             PromptInlineCssTextArea targetTextArea,
+                             BooleanProperty timeStampDisplayProperty,
+                             BooleanProperty hexDisplayProperty,
+                             HighlighterScheduler highlighter,
+                             int lineTimeoutMs,
                              boolean showLogType) {
         this.comPort = Objects.requireNonNull(comPort);
         this.targetTextArea = Objects.requireNonNull(targetTextArea);
@@ -112,6 +137,7 @@ public class SerialReadService extends Service<LogText> {
             this.hexDisplayProperty.bind(hexDisplayProperty);
         }
         this.highlighterScheduler = highlighter;
+        this.lineTimeoutMs = Math.max(lineTimeoutMs, 0);
 
         valueProperty().addListener((observable, oldValue, newValue) -> {
             // Service 结束时 value 可能为 null，避免监听器 NPE
@@ -144,9 +170,21 @@ public class SerialReadService extends Service<LogText> {
                     boolean previousHexDisplay = hexDisplayProperty.get();
 
                     while (!isCancelled()) {
-                        int n = in.read(rawBuf);
+                        int n;
+                        try {
+                            n = in.read(rawBuf);
+                        } catch (SerialPortTimeoutException timeoutException) {
+                            // 串口读超时属于正常轮询事件，不中断读取服务
+                            flushLineBufferByTimeout(lineBuf, lineEmitter);
+                            continue;
+                        }
+
                         if (n < 0) break;       // EOF
-                        if (n == 0) continue;   // 无数据
+                        if (n == 0) {
+                            // 读超时：文本模式下输出未换行缓存
+                            flushLineBufferByTimeout(lineBuf, lineEmitter);
+                            continue;
+                        }
 
                         // 统计接收字节数
                         long totalBytes = recvBytesCount.addAndGet(n);
@@ -204,6 +242,14 @@ public class SerialReadService extends Service<LogText> {
         return StandardCharsets.UTF_8.newDecoder()
                 .onMalformedInput(CodingErrorAction.REPLACE)
                 .onUnmappableCharacter(CodingErrorAction.REPLACE);
+    }
+
+    private void flushLineBufferByTimeout(StringBuilder lineBuf, Consumer<String> lineEmitter) {
+        if (lineTimeoutMs <= 0 || lineBuf.isEmpty() || hexDisplayProperty.get()) {
+            return;
+        }
+        lineEmitter.accept(lineBuf.toString());
+        lineBuf.setLength(0);
     }
 
     private void flushTextTail(CharsetDecoder decoder,
@@ -372,3 +418,5 @@ public class SerialReadService extends Service<LogText> {
         return new LogText(ts, raw, LogType.RECEIVE);
     }
 }
+
+

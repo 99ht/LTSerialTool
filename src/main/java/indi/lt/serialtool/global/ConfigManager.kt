@@ -25,6 +25,8 @@ object ConfigManager {
 
     // 常量定义
     const val KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS: String = "receive.splitPane.dividerPositions"
+    const val KEY_RECEIVE_TIMEOUT_MS: String = "receive.timeoutMs"
+    const val DEFAULT_RECEIVE_TIMEOUT_MS: Int = 500
 
     init {
         load()
@@ -155,3 +157,4 @@ object ConfigManager {
         }
     }
 }
+

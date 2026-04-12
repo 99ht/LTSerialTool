@@ -4,29 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-这是一个基于 JavaFX 的串口通信工具，支持串口数据的发送和接收功能。项目采用 Kotlin 和 Java 混合开发，使用 Maven 构建系统。
-
 ## 构建和运行
 
 ### 构建项目
-```bash
-mvn clean install
-```
-
-### 运行应用程序
-```bash
-mvn exec:java -Dexec.mainClass="indi.lt.serialtool.SerialApplication"
-```
-
-### 运行测试
-```bash
-mvn test
-```
-
-### 运行单个测试
-```bash
-mvn test -Dtest=TestClassName#testMethodName
-```
 
 ## 代码架构
 
@@ -117,4 +97,11 @@ mvn test -Dtest=TestClassName#testMethodName
 - 新增功能不要影响现有功能，如果需要影响，请向我确认
 - 注意不要在javafx的UI线程中执行耗时让我
 
+## Token消耗问题
+- 当需要执行消耗大量Token的任务时，通知我确认
+
+## 编译验证
+- 当需要执行`gradle`命令进行编译验证时，将需要验证的命令返回给我，不用擅自执行
+
+## 外部规则引用
 @RTK.md

@@ -1,19 +1,30 @@
-<?xml version="1.0" encoding="UTF-8"?><?import javafx.scene.control.CheckMenuItem?><?import javafx.scene.control.MenuButton?><?import javafx.scene.control.MenuItem?><?import javafx.scene.control.TabPane?><?import javafx.scene.control.ToolBar?><?import javafx.scene.input.KeyCodeCombination?><?import javafx.scene.layout.BorderPane?><?import javafx.scene.control.Button?>
-<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0" xmlns="http://javafx.com/javafx/17.0.2-ea"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="indi.lt.serialtool.controller.MainController">
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckMenuItem?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane fx:id="rootPane" prefHeight="656.0" prefWidth="670.0"
+            xmlns="http://javafx.com/javafx/17.0.2-ea"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="indi.lt.serialtool.controller.MainController">
     <center>
-        <TabPane fx:id="tabRootPane" BorderPane.alignment="CENTER"></TabPane>
+        <TabPane fx:id="tabRootPane" BorderPane.alignment="CENTER"/>
     </center>
     <left>
         <ToolBar fx:id="toolBar" orientation="VERTICAL" BorderPane.alignment="CENTER">
             <items>
-                <Button fx:id="mbNewTab" mnemonicParsing="false" onAction="#addNewTab"></Button>
+                <Button fx:id="mbNewTab" mnemonicParsing="false" onAction="#addNewTab"/>
                 <MenuButton fx:id="mbFile" mnemonicParsing="false">
                     <items>
                         <MenuItem mnemonicParsing="false" text="保存为压缩包">
                             <accelerator>
-                                <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP"
-                                                    shortcut="UP"/>
+                                <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
                             </accelerator>
                         </MenuItem>
                     </items>
@@ -25,10 +36,11 @@
                         <MenuItem mnemonicParsing="false" text="设置自动保存文件大小"/>
                         <CheckMenuItem mnemonicParsing="false" text="提示缓冲区达到90%容量"/>
                         <MenuItem mnemonicParsing="false" text="设置显示缓冲区容量"/>
+                        <MenuItem fx:id="menuReceiveTimeout" mnemonicParsing="false" onAction="#setReceiveTimeout" text="设置接收超时时间"/>
                     </items>
                 </MenuButton>
                 <MenuButton fx:id="mbTheme" mnemonicParsing="false">
-                    <items></items>
+                    <items/>
                 </MenuButton>
                 <MenuButton fx:id="mbTools" mnemonicParsing="false">
                     <items>

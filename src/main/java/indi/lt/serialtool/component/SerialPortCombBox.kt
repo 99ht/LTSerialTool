@@ -210,7 +210,7 @@ class SerialPortCombBox : ComboBox<String?>() {
                 selectedPort!!.setFlowControl(settings.flowControl)
 
                 // 3️⃣ 设置读写超时模式（保持非阻塞或半阻塞都可以）
-                selectedPort!!.setComPortTimeouts(timeOutMode, 0, timeOutMillionTime)
+                selectedPort!!.setComPortTimeouts(timeOutMode, timeOutMillionTime, timeOutMillionTime)
 
                 // 4️⃣ 异步打开串口 + 超时控制
                 future = executor.submit<Boolean> { selectedPort!!.openPort() }
@@ -259,6 +259,10 @@ class SerialPortCombBox : ComboBox<String?>() {
 
     fun setActiveProperty(activeProperty: Boolean) {
         this.activeProperty.set(activeProperty)
+    }
+
+    fun setTimeoutMillis(timeoutMs: Int) {
+        this.timeOutMillionTime = if (timeoutMs > 0) timeoutMs else 0
     }
 
     fun closeSelectSerial() {
