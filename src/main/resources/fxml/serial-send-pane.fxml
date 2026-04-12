@@ -35,7 +35,7 @@
                                             <children>
                                                 <Label minWidth="50.0" text="波特率：" />
                                                 <ComboBox fx:id="cbBautrate" prefWidth="150.0" HBox.hgrow="ALWAYS" />
-                                                <Button minWidth="80.0" mnemonicParsing="false" text="更多设置" />
+                                                <Button fx:id="btnMoreSettings" minWidth="80.0" mnemonicParsing="false" onAction="#showMoreSettings" text="更多设置" />
                                             </children>
                                         </HBox>
                                         <SerialToggleButton fx:id="btnOpenSerial" maxWidth="1.7976931348623157E308" mnemonicParsing="false" selectedText="关闭串口" text="打开串口" unSelectedText="打开串口" />

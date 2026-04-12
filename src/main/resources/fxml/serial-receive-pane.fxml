@@ -22,7 +22,7 @@
                         <children>
                             <Label minWidth="42.0" text="波特率:" />
                             <ComboBox fx:id="cbBautRateList" editable="true" minWidth="80.0" prefWidth="150.0" HBox.hgrow="ALWAYS" />
-                            <Button minWidth="80.0" mnemonicParsing="false" text="更多设置" />
+                            <Button fx:id="btnMoreSettings" minWidth="80.0" mnemonicParsing="false" onAction="#showMoreSettings" text="更多设置" />
                         </children>
                     </HBox>
                </children>
@@ -54,7 +54,7 @@
                   <children>
                       <Label maxHeight="1.7976931348623157E308" text="就绪" />
                       <Label maxHeight="1.7976931348623157E308" prefWidth="39.0" text="接收量:" />
-                      <Label maxHeight="1.7976931348623157E308" text="0B" />
+                      <Label fx:id="lbRecvBytes" maxHeight="1.7976931348623157E308" text="0 B" />
                   </children>
               </HBox>
           </children>

@@ -35,4 +35,13 @@ public class UIUtil {
         // 如果 ComboBox 的值为 null 或其他类型，返回默认值
         return defaultValue;
     }
+
+    /**
+     * 显示提示信息
+     * @param message 提示信息
+     */
+    public static void showToast(String message) {
+        // 这里可以添加实际的 Toast 实现
+        System.out.println("Toast: " + message);
+    }
 }

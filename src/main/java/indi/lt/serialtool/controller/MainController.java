@@ -13,14 +13,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.RadioMenuItem;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -59,6 +52,8 @@ public class MainController implements Initializable {
 
     @FXML
     public MenuButton mbSetting;
+
+    public CheckMenuItem autoSaveCheck;
     public MenuButton mbTools;
     public MenuButton mbHelp;
     public Button mbNewTab;
@@ -142,6 +137,11 @@ public class MainController implements Initializable {
                 Theme theme = (Theme) newVal.getUserData();
                 SerialApplication.setUserAgentStylesheet(theme.getUserAgentStylesheet());
             }
+        });
+
+        autoSaveCheck.setOnAction(e -> {
+            boolean enabled = autoSaveCheck.isSelected();
+            System.out.println("自动保存: " + enabled);
         });
     }
 

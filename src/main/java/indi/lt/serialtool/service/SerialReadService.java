@@ -24,6 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 /**
  * 串口读取服务：
@@ -56,6 +58,16 @@ public class SerialReadService extends Service<LogText> {
      * 是否显示时间戳
      */
     private final SimpleBooleanProperty timeStampDisplayProperty = new SimpleBooleanProperty(false);
+
+    /**
+     * 接收字节数统计
+     */
+    private final AtomicLong recvBytesCount = new AtomicLong(0);
+
+    /**
+     * 接收字节数变化回调
+     */
+    private Consumer<Long> onRecvBytesChanged;
 
     // —— 构造 —— //
 
@@ -104,7 +116,15 @@ public class SerialReadService extends Service<LogText> {
                     while (!isCancelled()) {
                         int n = in.read(rawBuf);
                         if (n < 0) break;       // EOF
-                        if (n == 0) continue;   // 无数据                        // 解码
+                        if (n == 0) continue;   // 无数据
+
+                        // 统计接收字节数
+                        long totalBytes = recvBytesCount.addAndGet(n);
+                        if (onRecvBytesChanged != null) {
+                            onRecvBytesChanged.accept(totalBytes);
+                        }
+
+                        // 解码
                         byteBuf.clear();
                         byteBuf.put(rawBuf, 0, n).flip();
                         while (byteBuf.hasRemaining()) {
@@ -195,6 +215,30 @@ public class SerialReadService extends Service<LogText> {
         }
         LOG.error("串口 [" + comPort + "] 读取服务失败");
         return false;
+    }
+
+    /**
+     * 设置接收字节数变化回调
+     */
+    public void setOnRecvBytesChanged(Consumer<Long> callback) {
+        this.onRecvBytesChanged = callback;
+    }
+
+    /**
+     * 获取接收字节数
+     */
+    public long getRecvBytesCount() {
+        return recvBytesCount.get();
+    }
+
+    /**
+     * 重置接收字节数
+     */
+    public void resetRecvBytesCount() {
+        recvBytesCount.set(0);
+        if (onRecvBytesChanged != null) {
+            onRecvBytesChanged.accept(0L);
+        }
     }
 
     /**

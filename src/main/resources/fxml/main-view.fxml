@@ -31,7 +31,7 @@
                 </MenuButton>
                 <MenuButton fx:id="mbSetting" mnemonicParsing="false">
                     <items>
-                        <CheckMenuItem mnemonicParsing="false" text="自动保存"/>
+                        <CheckMenuItem fx:id="autoSaveCheck" mnemonicParsing="false" text="自动保存"/>
                         <MenuItem mnemonicParsing="false" text="设置自动保存超时时间"/>
                         <MenuItem mnemonicParsing="false" text="设置自动保存文件大小"/>
                         <CheckMenuItem mnemonicParsing="false" text="提示缓冲区达到90%容量"/>

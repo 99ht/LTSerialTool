@@ -1,0 +1,136 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## 项目概述
+
+这是一个基于 JavaFX 的串口通信工具，支持串口数据的发送和接收功能。项目采用 Kotlin 和 Java 混合开发，使用 Maven 构建系统。
+
+## 构建和运行
+
+### 构建项目
+```bash
+mvn clean install
+```
+
+### 运行应用程序
+```bash
+mvn exec:java -Dexec.mainClass="indi.lt.serialtool.SerialApplication"
+```
+
+### 运行测试
+```bash
+mvn test
+```
+
+### 运行单个测试
+```bash
+mvn test -Dtest=TestClassName#testMethodName
+```
+
+## 代码架构
+
+### 核心组件
+
+1. **FXML 文件** (`src/main/resources/fxml/`)
+   - `main-view.fxml`: 主界面布局
+   - `serial-send-pane.fxml`: 发送模式界面
+   - `serial-receive-pane.fxml`: 接收模式界面
+
+2. **控制器** (`src/main/java/indi/lt/serialtool/controller/`)
+   - `MainController.java`: 主控制器，管理 Tab 切换
+   - `SerialSendCtrl.java`: 发送模式控制器
+   - `SerialReceiveCtrl.kt`: 接收模式控制器（Kotlin）
+
+3. **服务层** (`src/main/java/indi/lt/serialtool/service/`)
+   - `SerialReadService.java`: 串口读取服务
+   - `SerialSenderService.java`: 串口发送服务
+
+4. **组件** (`src/main/java/indi/lt/serialtool/component/`)
+   - `SerialPortCombBox.kt`: 串口选择下拉框（Kotlin）
+   - `SerialToggleButton.java`: 串口开关按钮
+   - `PromptInlineCssTextArea.java`: 带内联 CSS 的文本区域
+
+5. **数据模型** (`src/main/java/indi/lt/serialtool/data/`)
+   - `SerialPortSettings.java`: 串口参数设置数据类
+
+### 串口通信流程
+
+1. **初始化**:
+   - 控制器初始化串口列表和波特率列表
+   - 加载历史配置
+
+2. **串口打开**:
+   - 通过 `SerialPortCombBox` 选择串口
+   - 调用 `SerialPortCombBox.openSelectedSerial()` 打开串口
+   - 设置串口参数（波特率、数据位、停止位、校验位、流控）
+
+3. **数据传输**:
+   - 发送模式：通过 `SerialSenderService` 发送数据
+   - 接收模式：通过 `SerialReadService` 接收数据
+
+### 串口参数设置
+
+项目支持自定义串口参数设置，包括：
+- 波特率
+- 数据位（5, 6, 7, 8）
+- 停止位（1, 1.5, 2）
+- 校验位（None, Odd, Even, Mark, Space）
+- 流控（None, RTS/CTS, XON/XOFF）
+
+### UI 组件
+
+- `SerialPortCombBox`: 封装串口选择逻辑，支持自定义参数
+- `SerialToggleButton`: 封装串口开关按钮，显示打开/关闭状态
+- `PromptInlineCssTextArea`: 支持内联 CSS 的高亮显示文本区域
+
+## 开发注意事项
+
+1. **串口操作**:
+   - 串口操作是异步的，使用 `TaskHandler` 进行异步处理
+   - 串口打开失败会显示 Toast 提示
+   - 串口参数设置通过 `SerialPortSettings` 类管理
+
+2. **UI 布局**:
+   - 使用 FXML 进行 UI 布局
+   - 控制器通过 `@FXML` 注解注入组件
+   - 支持独立窗口模式
+
+3. **数据存储**:
+   - 使用 `ConfigManager` 保存配置
+   - 命令历史通过 `CommandRepository` 管理
+
+4. **Kotlin/Java 混合开发**:
+   - 新组件优先使用 Kotlin
+   - 控制器根据需要选择 Kotlin 或 Java
+   - 注意 Kotlin 和 Java 之间的互操作性
+
+## 常见任务
+
+### 添加新功能
+1. 在 FXML 中添加新组件
+2. 在控制器中注入组件
+3. 实现业务逻辑
+4. 测试功能
+
+### 修改串口参数
+1. 修改 `SerialPortSettings` 类
+2. 更新 `SerialPortCombBox` 的参数设置逻辑
+3. 在控制器中调用参数设置对话框
+
+### 添加新的串口设置项
+1. 扩展 `SerialPortSettings` 类
+2. 更新 `SerialSettingsDialogCtrl` 控制器
+3. 修改 FXML 布局
+4. 更新 `SerialPortCombBox` 的参数应用逻辑
+
+## 已知问题
+
+- 串口操作可能因权限问题失败
+- 跨平台串口名称可能不同
+- 高波特率可能导致数据丢失
+
+## 固定规则
+- 每次执行任务之前叫我一声大哥
+- 尽量使用纯java代码，而不用使用fxml
+- 新增功能不要影响现有功能，如果需要影响，请向我确认

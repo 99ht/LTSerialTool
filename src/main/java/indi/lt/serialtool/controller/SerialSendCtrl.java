@@ -13,6 +13,8 @@ import indi.lt.serialtool.constant.CommandType;
 import indi.lt.serialtool.constant.LogType;
 import indi.lt.serialtool.data.CommandRepository;
 import indi.lt.serialtool.data.LogText;
+import indi.lt.serialtool.data.SerialPortSettings;
+import indi.lt.serialtool.global.ConfigManager;
 import indi.lt.serialtool.service.SerialReadService;
 import indi.lt.serialtool.service.SerialSenderService;
 import indi.lt.serialtool.utils.StringUtil;
@@ -21,10 +23,15 @@ import indi.lt.serialtool.view.BaseStage;
 import indi.lt.serialtool.view.SerialSendPane;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
@@ -86,6 +93,8 @@ public class SerialSendCtrl implements Initializable {
     private SerialToggleButton btnOpenSerial;
     @FXML
     private StackPane spTableContainer;
+    @FXML
+    private Button btnMoreSettings;
 
     private SerialSendPane rootPane;
 
@@ -101,10 +110,28 @@ public class SerialSendCtrl implements Initializable {
     // 保存上次串口选择的 key
     private final String keyLastSerial = "sendModeLastSerialPort";
 
+    // 串口参数设置
+    private SerialPortSettings serialPortSettings;
+
+    // 串口参数设置对话框 key
+    private static final String KEY_SERIAL_SETTINGS = "sendModeSerialSettings";
+
+    /**
+     * 初始化串口参数设置
+     */
+    private void initSerialPortSettings() {
+        // 从配置加载串口参数设置
+        serialPortSettings = ConfigManager.get(KEY_SERIAL_SETTINGS, SerialPortSettings.class, SerialPortSettings.createDefault());
+
+        // 应用设置到串口组件
+        cbSerialList.setSerialPortSettings(serialPortSettings);
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         highlighter = new InlineCssRegexHighlighter(taRecvArea);
         spTableContainer.getChildren().add(table);
+        initSerialPortSettings();
         initBaudRateList();
         initSerialComboBox();
         loadHistoryCommands();
@@ -163,8 +190,8 @@ public class SerialSendCtrl implements Initializable {
                 () -> UIUtil.getSelectedInt(cbBautrate, DEFAULT_BAUTRATE),
                 btnOpenSerial.selectedProperty(),
                 SerialPort.TIMEOUT_WRITE_BLOCKING | SerialPort.TIMEOUT_READ_SEMI_BLOCKING,
-                1000
-        );
+                0,  // timeOutMillionTime
+                serialPortSettings);  // settings
 
         // 选中波特率变化时重新打开串口
         cbBautrate.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -189,6 +216,8 @@ public class SerialSendCtrl implements Initializable {
      */
     private void setupButtonActions() {
         btnSend.setOnAction(e -> sendData());
+
+        btnMoreSettings.setOnAction(e -> showMoreSettings());
 
         cbSerialList.disableProperty().bind(btnOpenSerial.disabledProperty());
         btnOpenSerial.selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -218,6 +247,60 @@ public class SerialSendCtrl implements Initializable {
             btnOpenSerial.setDisable(false);
             btnOpenSerial.setSelected(false);
         });
+    }
+
+    /**
+     * 显示更多设置对话框
+     */
+    @FXML
+    private void showMoreSettings() {
+        try {
+            // 加载对话框 FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/serial-settings-dialog.fxml"));
+            DialogPane dialogPane = loader.load();
+
+            // 获取控制器
+            SerialSettingsDialogCtrl dialogCtrl = loader.getController();
+
+            // 设置当前设置
+            dialogCtrl.setSettings(serialPortSettings);
+
+            // 创建对话框
+            Dialog<SerialPortSettings> dialog = new Dialog<>();
+            dialog.setDialogPane(dialogPane);
+            dialog.setTitle("串口参数设置");
+            dialog.setHeaderText("自定义串口参数");
+
+            // 设置按钮
+            dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+            // 处理 OK 按钮
+            dialog.setResultConverter(buttonType -> {
+                if (buttonType == ButtonType.OK) {
+                    // 从 UI 更新设置
+                    dialogCtrl.updateSettingsFromUI();
+                    return dialogCtrl.getSettings();
+                }
+                return null;
+            });
+
+            // 显示对话框并等待结果
+            dialog.showAndWait().ifPresent(settings -> {
+                // 保存设置
+                serialPortSettings = settings;
+                ConfigManager.set(KEY_SERIAL_SETTINGS, settings);
+
+                // 应用设置到串口组件
+                cbSerialList.setSerialPortSettings(settings);
+
+                // 显示成功提示
+                ToastQueue.show(AppState.getStage(), "串口参数已更新", 800);
+            });
+
+        } catch (Exception e) {
+            LOG.error("显示串口设置对话框失败", e);
+            ToastQueue.show(AppState.getStage(), "打开设置对话框失败", 1000);
+        }
     }
 
     /**

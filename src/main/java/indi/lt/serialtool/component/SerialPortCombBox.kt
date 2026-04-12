@@ -4,9 +4,11 @@ import com.fazecast.jSerialComm.SerialPort
 import github.nonoas.jfx.flat.ui.AppState
 import github.nonoas.jfx.flat.ui.concurrent.TaskHandler
 import github.nonoas.jfx.flat.ui.stage.ToastQueue
+import indi.lt.serialtool.data.SerialPortSettings
 import indi.lt.serialtool.global.ConfigManager
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ObservableValue
 import javafx.event.EventHandler
 import javafx.scene.control.ComboBox
@@ -46,6 +48,11 @@ class SerialPortCombBox : ComboBox<String?>() {
      */
     private var baudRateSupplier: Supplier<Int>? = null
 
+    /**
+     * 串口参数设置
+     */
+    private val serialPortSettingsProperty = SimpleObjectProperty<SerialPortSettings>(SerialPortSettings())
+
     private var timeOutMode = 0
     private var timeOutMillionTime = 0
 
@@ -56,19 +63,26 @@ class SerialPortCombBox : ComboBox<String?>() {
      * @param baudRateSupplier 波特率提供方法
      * @param activeProperty   启用状态绑定
      * @param timeOutMode      超时模式
+     * @param settings         串口参数设置（可选，默认为空，使用内部默认值）
      */
     fun init(
         keyLastSerial: String?,
         baudRateSupplier: Supplier<Int>?,
         activeProperty: BooleanProperty,
         timeOutMode: Int,
-        timeOutMillionTime: Int = 0
+        timeOutMillionTime: Int = 0,
+        settings: SerialPortSettings? = null
     ) {
         this.timeOutMode = timeOutMode
         this.timeOutMillionTime = timeOutMillionTime
         this.keyLastSerial = Objects.requireNonNull(keyLastSerial)
         this.baudRateSupplier = baudRateSupplier
         this.activeProperty.bind(activeProperty)
+
+        // 如果有传入设置，则使用传入的设置
+        if (settings != null) {
+            this.serialPortSettingsProperty.set(settings)
+        }
 
         // 串口下拉框初始化
         TaskHandler<SerialPortData>()
@@ -179,12 +193,21 @@ class SerialPortCombBox : ComboBox<String?>() {
                     LOG.info("关闭旧串口")
                 }
                 selectedPort = ports[index]
+
+                // 获取当前设置
+                val settings = serialPortSettingsProperty.get() ?: SerialPortSettings()
+
+                // 使用自定义设置或波特率提供者的值
+                val baudRate = baudRateSupplier?.get() ?: settings.baudRate
                 selectedPort!!.setComPortParameters(
-                    baudRateSupplier!!.get(),
-                    8,
-                    SerialPort.ONE_STOP_BIT,
-                    SerialPort.NO_PARITY
+                    baudRate,
+                    settings.dataBits,
+                    settings.stopBits,
+                    settings.parity
                 )
+
+                // 设置流控
+                selectedPort!!.setFlowControl(settings.flowControl)
 
                 // 3️⃣ 设置读写超时模式（保持非阻塞或半阻塞都可以）
                 selectedPort!!.setComPortTimeouts(timeOutMode, 0, timeOutMillionTime)
@@ -255,6 +278,27 @@ class SerialPortCombBox : ComboBox<String?>() {
 
     fun setOnOpenFailed(onOpenFailed: Runnable?) {
         this.onOpenFailed = onOpenFailed
+    }
+
+    /**
+     * 获取串口参数设置
+     */
+    fun getSerialPortSettings(): SerialPortSettings {
+        return serialPortSettingsProperty.get() ?: SerialPortSettings()
+    }
+
+    /**
+     * 设置串口参数设置
+     */
+    fun setSerialPortSettings(settings: SerialPortSettings) {
+        serialPortSettingsProperty.set(settings)
+    }
+
+    /**
+     * 获取串口参数设置属性
+     */
+    fun serialPortSettingsProperty(): SimpleObjectProperty<SerialPortSettings> {
+        return serialPortSettingsProperty
     }
 
     internal class SerialPortData(internal val serialPorts: Array<SerialPort>, val lastSerial: String?)

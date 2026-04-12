@@ -19,9 +19,10 @@ object ConfigManager {
     private val CONFIG_DIR = "${System.getProperty("user.home")}${File.separator}.serialtool"
     private val CONFIG_FILE = "$CONFIG_DIR${File.separator}config.properties"
 
-    const val KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS: String = "receive.splitPane.dividerPositions"
-
     private val props = Properties()
+
+    // 常量定义
+    const val KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS: String = "receive.splitPane.dividerPositions"
 
     init {
         load()
@@ -68,5 +69,55 @@ object ConfigManager {
     @JvmStatic
     fun get(key: String?): String {
         return props.getProperty(key)
+    }
+
+    @JvmStatic
+    fun <T> set(key: String?, value: T) {
+        props.setProperty(key, value.toString())
+        save()
+    }
+
+    @JvmStatic
+    fun <T> get(key: String?, clazz: Class<T>, defaultValue: T): T {
+        val value = props.getProperty(key)
+        return if (value != null) {
+            try {
+                when (clazz) {
+                    Int::class.java -> value.toInt() as T
+                    Long::class.java -> value.toLong() as T
+                    Boolean::class.java -> value.toBoolean() as T
+                    Float::class.java -> value.toFloat() as T
+                    Double::class.java -> value.toDouble() as T
+                    String::class.java -> value as T
+                    else -> defaultValue
+                }
+            } catch (e: Exception) {
+                defaultValue
+            }
+        } else {
+            defaultValue
+        }
+    }
+
+    @JvmStatic
+    fun <T> get(key: String?, clazz: Class<T>): T? {
+        val value = props.getProperty(key)
+        return if (value != null) {
+            try {
+                when (clazz) {
+                    Int::class.java -> value.toInt() as T
+                    Long::class.java -> value.toLong() as T
+                    Boolean::class.java -> value.toBoolean() as T
+                    Float::class.java -> value.toFloat() as T
+                    Double::class.java -> value.toDouble() as T
+                    String::class.java -> value as T
+                    else -> null
+                }
+            } catch (e: Exception) {
+                null
+            }
+        } else {
+            null
+        }
     }
 }
