@@ -91,7 +91,7 @@ public class MainController implements Initializable {
         SerialReceivePane serialReceivePane1 = new SerialReceivePane("串口1:", "serialKey1");
         SerialReceivePane serialReceivePane2 = new SerialReceivePane("串口2:", "serialKey2");
 
-        String dividePostions = ConfigManager.get(KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS);
+        String dividePostions = ConfigManager.get(KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS,"0.5");
         spReceive.getItems().addAll(serialReceivePane1, serialReceivePane2);
         double[] dividePositionList = Arrays.stream(dividePostions.split(",")).mapToDouble(Double::parseDouble).toArray();
         Platform.runLater(() -> spReceive.setDividerPositions(dividePositionList));
