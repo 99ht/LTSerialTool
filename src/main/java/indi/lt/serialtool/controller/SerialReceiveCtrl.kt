@@ -65,6 +65,9 @@ class SerialReceiveCtrl : Initializable {
     private lateinit var cbHexDisplay: CheckBox
 
     @FXML
+    private lateinit var cbHighlightKeyword: CheckBox
+
+    @FXML
     private lateinit var tfKeyWord: TextField
 
     @FXML
@@ -81,30 +84,59 @@ class SerialReceiveCtrl : Initializable {
     // 串口参数设置
     private var serialPortSettings: SerialPortSettings = SerialPortSettings.createDefault()
 
-    // 串口参数设置对话框 key
-    private val KEY_SERIAL_SETTINGS = "receiveModeSerialSettings"
-
     override fun initialize(url: URL?, resourceBundle: ResourceBundle?) {
-        initSerialPortSettings()
         initBautRateList()
         registerSerialEvent()
+        bindFormStatePersistence()
     }
 
-    /**
-     * 初始化串口参数设置
-     */
-    private fun initSerialPortSettings() {
-        // 从配置加载串口参数设置
-        serialPortSettings = ConfigManager.getObject(KEY_SERIAL_SETTINGS, SerialPortSettings::class.java, SerialPortSettings.createDefault())
+    private fun persistenceScope(): String {
+        val scope = keyLastSerial?.takeIf { it.isNotBlank() } ?: "default"
+        return "receiveMode.$scope"
+    }
 
-        // 应用设置到串口组件
+    private fun formKey(name: String): String {
+        return "${persistenceScope()}.form.$name"
+    }
+
+    private fun serialSettingsKey(): String {
+        return "${persistenceScope()}.serialSettings"
+    }
+
+    private fun applyPersistedState() {
+        serialPortSettings = ConfigManager.getObject(serialSettingsKey(), SerialPortSettings::class.java, SerialPortSettings.createDefault())
         cbSerialList.setSerialPortSettings(serialPortSettings)
+        cbBautRateList.selectionModel.select(serialPortSettings.baudRate)
+        cbBautRateList.value = serialPortSettings.baudRate
+        restoreFormState()
     }
 
     private fun registerSerialEvent() {
         initOpenSerialButtonAction()
         initBautRateComboBoxAction()
         initMoreSettingsButtonAction()
+    }
+
+    private fun restoreFormState() {
+        cbHexDisplay.isSelected = ConfigManager.get(formKey("hexDisplay"), Boolean::class.java, false)
+        cbTimeDisplay.isSelected = ConfigManager.get(formKey("timeDisplay"), Boolean::class.java, false)
+        cbHighlightKeyword.isSelected = ConfigManager.get(formKey("highlightKeyword"), Boolean::class.java, false)
+        tfKeyWord.text = ConfigManager.get(formKey("keyword"), "")
+    }
+
+    private fun bindFormStatePersistence() {
+        cbHexDisplay.selectedProperty().addListener { _, _, newVal ->
+            ConfigManager.put(formKey("hexDisplay"), newVal.toString())
+        }
+        cbTimeDisplay.selectedProperty().addListener { _, _, newVal ->
+            ConfigManager.put(formKey("timeDisplay"), newVal.toString())
+        }
+        cbHighlightKeyword.selectedProperty().addListener { _, _, newVal ->
+            ConfigManager.put(formKey("highlightKeyword"), newVal.toString())
+        }
+        tfKeyWord.textProperty().addListener { _, _, newVal ->
+            ConfigManager.put(formKey("keyword"), newVal ?: "")
+        }
     }
 
     /**
@@ -154,7 +186,7 @@ class SerialReceiveCtrl : Initializable {
             dialog.showAndWait().ifPresent { settings ->
                 // 保存设置
                 serialPortSettings = settings
-                ConfigManager.setObject(KEY_SERIAL_SETTINGS, settings)
+                ConfigManager.putObject(serialSettingsKey(), settings)
 
                 // 应用设置到串口组件
                 cbSerialList.setSerialPortSettings(settings)
@@ -269,10 +301,12 @@ class SerialReceiveCtrl : Initializable {
     }
 
     private fun initBautRateComboBoxAction() {
-        if (!cbBautRateList.items.isEmpty()) {
-            cbBautRateList.selectionModel.selectFirst()
-        }
-        cbBautRateList.selectionModel.selectedItemProperty().addListener { _: Observable? ->
+        cbBautRateList.selectionModel.selectedItemProperty().addListener { _: Observable?, _: Int?, newVal: Int? ->
+            if (newVal != null) {
+                serialPortSettings.baudRate = newVal
+                cbSerialList.setSerialPortSettings(serialPortSettings)
+                ConfigManager.putObject(serialSettingsKey(), serialPortSettings)
+            }
             onBaudRateChanged()
         }
     }
@@ -312,10 +346,9 @@ class SerialReceiveCtrl : Initializable {
         )
 
         cbBautRateList.items = baudRates
-        Platform.runLater {
-            cbBautRateList.selectionModel.select(1500000)
-            cbBautRateList.value = 1500000
-        }
+        val baudRate = serialPortSettings.baudRate
+        cbBautRateList.selectionModel.select(baudRate)
+        cbBautRateList.value = baudRate
     }
 
     fun setSerialName(serialName: String?) {
@@ -324,6 +357,19 @@ class SerialReceiveCtrl : Initializable {
 
     fun setKeyLastSerial(keyLastSerial: String?) {
         this.keyLastSerial = keyLastSerial
+        applyPersistedState()
+    }
+
+    fun persistFormStateToConfig() {
+        ConfigManager.put(formKey("hexDisplay"), cbHexDisplay.isSelected.toString())
+        ConfigManager.put(formKey("timeDisplay"), cbTimeDisplay.isSelected.toString())
+        ConfigManager.put(formKey("highlightKeyword"), cbHighlightKeyword.isSelected.toString())
+        ConfigManager.put(formKey("keyword"), tfKeyWord.text ?: "")
+
+        cbBautRateList.value?.let {
+            serialPortSettings.baudRate = it
+        }
+        ConfigManager.putObject(serialSettingsKey(), serialPortSettings)
     }
 
     /**

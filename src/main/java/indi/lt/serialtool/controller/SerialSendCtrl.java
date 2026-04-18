@@ -33,6 +33,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.Priority;
@@ -45,9 +46,12 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -101,6 +105,7 @@ public class SerialSendCtrl implements Initializable {
     private SerialSendPane rootPane;
 
     private final CommandTableView table = new CommandTableView();
+    private final Set<String> commandPersistenceBoundIds = new HashSet<>();
 
     private BaseStage currStage;
 
@@ -117,6 +122,14 @@ public class SerialSendCtrl implements Initializable {
 
     // 串口参数设置对话框 key
     private static final String KEY_SERIAL_SETTINGS = "sendModeSerialSettings";
+    private static final String KEY_SEND_TEXT = "sendMode.form.sendText";
+    private static final String KEY_HEX_DISPLAY = "sendMode.form.hexDisplay";
+    private static final String KEY_HEX_SEND = "sendMode.form.hexSend";
+    private static final String KEY_LINE_BREAK = "sendMode.form.lineBreak";
+    private static final String KEY_TIMESTAMP_DISPLAY = "sendMode.form.timestampDisplay";
+    private static final String KEY_REMARK = "sendMode.form.remark";
+    private static final String KEY_COMMAND = "sendMode.form.command";
+    private static final String KEY_COMMAND_HEX = "sendMode.form.commandHex";
 
     /**
      * 初始化串口参数设置
@@ -138,6 +151,8 @@ public class SerialSendCtrl implements Initializable {
         initSerialComboBox();
         loadHistoryCommands();
         setupButtonActions();
+        restoreFormState();
+        bindFormStatePersistence();
 
         // 切换独立窗口
         tgWindowMode.selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -184,7 +199,8 @@ public class SerialSendCtrl implements Initializable {
         List<Integer> baudRates = Arrays.asList(1200, 2400, 4800, 9600, 38400, 57600, 115200, 230400, DEFAULT_BAUTRATE, 2000000, 3000000);
         cbBautrate.getItems().clear();
         cbBautrate.getItems().addAll(baudRates);
-        cbBautrate.getSelectionModel().select(Integer.valueOf(DEFAULT_BAUTRATE));
+        int baudRate = serialPortSettings != null ? serialPortSettings.getBaudRate() : DEFAULT_BAUTRATE;
+        cbBautrate.getSelectionModel().select(Integer.valueOf(baudRate));
     }
 
     /**
@@ -213,8 +229,48 @@ public class SerialSendCtrl implements Initializable {
     private void loadHistoryCommands() {
         new TaskHandler<List<CommandTableView.CommandItem>>()
                 .whenCall(CommandRepository.INSTANCE::loadAll)
-                .andThen(table.getItems()::addAll)
+                .andThen(items -> {
+                    table.getItems().addAll(items);
+                    items.forEach(this::attachCommandPersistence);
+                })
                 .handle();
+    }
+
+    private void restoreFormState() {
+        taSendArea.setText(ConfigManager.get(KEY_SEND_TEXT, ""));
+        cbHexDisplay.setSelected(ConfigManager.get(KEY_HEX_DISPLAY, Boolean.class, false));
+        cbHexSend.setSelected(ConfigManager.get(KEY_HEX_SEND, Boolean.class, false));
+        lineBreak.setSelected(ConfigManager.get(KEY_LINE_BREAK, Boolean.class, false));
+        cbTimeStampDisplay.setSelected(ConfigManager.get(KEY_TIMESTAMP_DISPLAY, Boolean.class, false));
+        tfRemark.setText(ConfigManager.get(KEY_REMARK, ""));
+        tfCommand.setText(ConfigManager.get(KEY_COMMAND, ""));
+        cbIsHex.setSelected(ConfigManager.get(KEY_COMMAND_HEX, Boolean.class, false));
+    }
+
+    private void bindFormStatePersistence() {
+        bindTextPersistence(taSendArea, KEY_SEND_TEXT);
+        bindTextPersistence(tfRemark, KEY_REMARK);
+        bindTextPersistence(tfCommand, KEY_COMMAND);
+        bindCheckBoxPersistence(cbHexDisplay, KEY_HEX_DISPLAY);
+        bindCheckBoxPersistence(cbHexSend, KEY_HEX_SEND);
+        bindCheckBoxPersistence(lineBreak, KEY_LINE_BREAK);
+        bindCheckBoxPersistence(cbTimeStampDisplay, KEY_TIMESTAMP_DISPLAY);
+        bindCheckBoxPersistence(cbIsHex, KEY_COMMAND_HEX);
+        cbBautrate.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null) {
+                return;
+            }
+            serialPortSettings.setBaudRate(newVal);
+            ConfigManager.putObject(KEY_SERIAL_SETTINGS, serialPortSettings);
+        });
+    }
+
+    private void bindTextPersistence(TextInputControl textInputControl, String key) {
+        textInputControl.textProperty().addListener((obs, oldVal, newVal) -> ConfigManager.put(key, newVal == null ? "" : newVal));
+    }
+
+    private void bindCheckBoxPersistence(CheckBox checkBox, String key) {
+        checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> ConfigManager.set(key, String.valueOf(newVal)));
     }
 
     /**
@@ -294,7 +350,7 @@ public class SerialSendCtrl implements Initializable {
             dialog.showAndWait().ifPresent(settings -> {
                 // 保存设置
                 serialPortSettings = settings;
-                ConfigManager.setObject(KEY_SERIAL_SETTINGS, settings);
+                ConfigManager.putObject(KEY_SERIAL_SETTINGS, settings);
 
                 // 应用设置到串口组件
                 cbSerialList.setSerialPortSettings(settings);
@@ -408,7 +464,65 @@ public class SerialSendCtrl implements Initializable {
                 type.toString()
         );
         table.getItems().add(item);
+        attachCommandPersistence(item);
         CommandRepository.INSTANCE.add(item);
+    }
+
+    private void attachCommandPersistence(CommandTableView.CommandItem item) {
+        if (item == null || !commandPersistenceBoundIds.add(item.getId())) {
+            return;
+        }
+        item.remarkProperty().addListener((obs, oldVal, newVal) -> persistCommandTable());
+        item.commandProperty().addListener((obs, oldVal, newVal) -> persistCommandTable());
+        item.commandTypeProperty().addListener((obs, oldVal, newVal) -> persistCommandTable());
+        item.intervalProperty().addListener((obs, oldVal, newVal) -> persistCommandTable());
+        item.scheduledProperty().addListener((obs, oldVal, newVal) -> persistCommandTable());
+    }
+
+    private void persistCommandTable() {
+        List<CommandTableView.CommandItem> snapshot = new ArrayList<>();
+        for (CommandTableView.CommandItem item : table.getItems()) {
+            if (item != null) {
+                snapshot.add(item);
+            }
+        }
+        TaskHandler.backRun(() -> CommandRepository.INSTANCE.saveAll(snapshot));
+    }
+
+    public void persistFormStateToConfig() {
+        ConfigManager.put(KEY_SEND_TEXT, taSendArea.getText() == null ? "" : taSendArea.getText());
+        ConfigManager.put(KEY_HEX_DISPLAY, String.valueOf(cbHexDisplay.isSelected()));
+        ConfigManager.put(KEY_HEX_SEND, String.valueOf(cbHexSend.isSelected()));
+        ConfigManager.put(KEY_LINE_BREAK, String.valueOf(lineBreak.isSelected()));
+        ConfigManager.put(KEY_TIMESTAMP_DISPLAY, String.valueOf(cbTimeStampDisplay.isSelected()));
+        ConfigManager.put(KEY_REMARK, tfRemark.getText() == null ? "" : tfRemark.getText());
+        ConfigManager.put(KEY_COMMAND, tfCommand.getText() == null ? "" : tfCommand.getText());
+        ConfigManager.put(KEY_COMMAND_HEX, String.valueOf(cbIsHex.isSelected()));
+
+        Integer baudRate = cbBautrate.getValue();
+        if (baudRate != null) {
+            serialPortSettings.setBaudRate(baudRate);
+        }
+        ConfigManager.putObject(KEY_SERIAL_SETTINGS, serialPortSettings);
+    }
+
+    public List<CommandTableView.CommandItem> snapshotCommandTable() {
+        List<CommandTableView.CommandItem> snapshot = new ArrayList<>();
+        for (CommandTableView.CommandItem item : table.getItems()) {
+            if (item == null) {
+                continue;
+            }
+            CommandTableView.CommandItem copy = new CommandTableView.CommandItem(
+                    item.getId(),
+                    item.getRemark(),
+                    item.getCommand(),
+                    item.getCommandType()
+            );
+            copy.setInterval(item.getInterval());
+            copy.setScheduled(item.isScheduled());
+            snapshot.add(copy);
+        }
+        return snapshot;
     }
 
     public void setRootPane(SerialSendPane rootPane) {
@@ -428,6 +542,3 @@ public class SerialSendCtrl implements Initializable {
         taRecvArea.getArea().clear();
     }
 }
-
-
-

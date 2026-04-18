@@ -3,21 +3,28 @@ package indi.lt.serialtool;
 import github.nonoas.jfx.flat.ui.AppState;
 import github.nonoas.jfx.flat.ui.AutoReleaseApplication;
 import github.nonoas.jfx.flat.ui.theme.LightTheme;
+import indi.lt.serialtool.component.CommandTableView;
 import indi.lt.serialtool.controller.MainController;
+import indi.lt.serialtool.data.CommandRepository;
 import indi.lt.serialtool.global.ConfigManager;
 import indi.lt.serialtool.view.MainStage;
-import javafx.application.Application;
+import indi.lt.serialtool.view.SaveProgressStage;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.HeaderBar;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.List;
 
 import static indi.lt.serialtool.global.ConfigManager.KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS;
 
@@ -26,6 +33,8 @@ public class SerialApplication extends AutoReleaseApplication {
     private final Logger LOG = LogManager.getLogger(MainController.class);
 
     private MainController controller;
+    private volatile boolean shutdownInProgress;
+    private volatile boolean shutdownSaveCompleted;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -56,22 +65,90 @@ public class SerialApplication extends AutoReleaseApplication {
         appStage.registryDragger(controller.getMenuBar());
 
         AppState.setStage(appStage.getStage());
+        appStage.getStage().setOnCloseRequest(this::handleCloseRequest);
         appStage.show();
     }
 
     @Override
     public void stop() throws Exception {
-        saveLayout();
+        if (!shutdownSaveCompleted) {
+            saveLayoutToMemory();
+            ConfigManager.save();
+        }
         super.stop();
     }
 
-    private void saveLayout() {
+    private void handleCloseRequest(WindowEvent event) {
+        if (shutdownSaveCompleted) {
+            return;
+        }
+        if (shutdownInProgress) {
+            event.consume();
+            return;
+        }
+        event.consume();
+        shutdownInProgress = true;
+
         Stage stage = AppState.getStage();
-        ConfigManager.set("window.x", String.valueOf(stage.getX()));
-        ConfigManager.set("window.y", String.valueOf(stage.getY()));
-        ConfigManager.set("window.width", String.valueOf(stage.getWidth()));
-        ConfigManager.set("window.height", String.valueOf(stage.getHeight()));
-        ConfigManager.set("window.isMaximized", String.valueOf(stage.isMaximized()));
-        ConfigManager.set(KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS, String.join(",", controller.getDividePosition()));
+        saveLayoutToMemory();
+        List<CommandTableView.CommandItem> commandSnapshot = controller.snapshotCommandTable();
+
+        SaveProgressStage progressStage = new SaveProgressStage(stage);
+        Task<Void> saveTask = new Task<>() {
+            @Override
+            protected Void call() {
+                updateMessage("正在整理表单数据...");
+                updateProgress(1, 4);
+                updateMessage("正在保存指令列表...");
+                CommandRepository.INSTANCE.saveAll(commandSnapshot);
+                updateProgress(2, 4);
+                updateMessage("正在写入配置文件...");
+                ConfigManager.save();
+                updateProgress(3, 4);
+                updateMessage("保存完成，正在关闭窗口...");
+                updateProgress(4, 4);
+                return null;
+            }
+        };
+
+        progressStage.bind(saveTask);
+        saveTask.setOnSucceeded(e -> {
+            shutdownSaveCompleted = true;
+            progressStage.close();
+            Platform.exit();
+        });
+        saveTask.setOnFailed(e -> {
+            shutdownInProgress = false;
+            progressStage.close();
+            LOG.error("关闭前保存失败", saveTask.getException());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("保存失败");
+            alert.setHeaderText("关闭前保存配置失败");
+            alert.setContentText(saveTask.getException() == null ? "请重试关闭窗口。" : saveTask.getException().getMessage());
+            alert.showAndWait();
+        });
+
+        progressStage.show();
+        Thread saveThread = new Thread(saveTask, "app-shutdown-save");
+        saveThread.setDaemon(true);
+        saveThread.start();
+    }
+
+    private void saveLayoutToMemory() {
+        if (controller != null) {
+            controller.persistFormStateToConfig();
+        }
+        Stage stage = AppState.getStage();
+        if (stage == null) {
+            return;
+        }
+        ConfigManager.put("window.x", String.valueOf(stage.getX()));
+        ConfigManager.put("window.y", String.valueOf(stage.getY()));
+        ConfigManager.put("window.width", String.valueOf(stage.getWidth()));
+        ConfigManager.put("window.height", String.valueOf(stage.getHeight()));
+        ConfigManager.put("window.isMaximized", String.valueOf(stage.isMaximized()));
+        if (controller != null) {
+            ConfigManager.put(KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS, controller.getDividePosition());
+        }
     }
 }

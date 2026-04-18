@@ -102,5 +102,9 @@ public class SerialReceivePane extends StackPane {
         }
         return keywords;
     }
+
+    public SerialReceiveCtrl getController() {
+        return controller;
+    }
 }
 

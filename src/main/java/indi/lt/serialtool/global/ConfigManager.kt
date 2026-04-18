@@ -4,9 +4,10 @@ import com.google.gson.Gson
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File
-import java.io.FileReader
-import java.io.FileWriter
 import java.io.IOException
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
@@ -40,7 +41,7 @@ object ConfigManager {
             }
             val file = File(CONFIG_FILE)
             if (file.exists()) {
-                FileReader(file).use { reader ->
+                InputStreamReader(file.inputStream(), StandardCharsets.UTF_8).use { reader ->
                     props.load(reader)
                 }
             }
@@ -49,9 +50,15 @@ object ConfigManager {
         }
     }
 
+    @JvmStatic
+    @Synchronized
     fun save() {
         try {
-            FileWriter(CONFIG_FILE).use { writer ->
+            val dirPath = Path.of(CONFIG_DIR)
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath)
+            }
+            OutputStreamWriter(File(CONFIG_FILE).outputStream(), StandardCharsets.UTF_8).use { writer ->
                 props.store(writer, "SerialTool Configuration")
             }
         } catch (e: IOException) {
@@ -60,28 +67,49 @@ object ConfigManager {
     }
 
     @JvmStatic
+    @Synchronized
+    fun put(key: String?, value: String?) {
+        if (key.isNullOrBlank()) {
+            return
+        }
+        props.setProperty(key, value ?: "")
+    }
+
+    @JvmStatic
     fun set(key: String?, value: String?) {
-        props.setProperty(key, value)
+        put(key, value)
         save()
     }
 
     @JvmStatic
+    @Synchronized
     fun get(key: String?, defaultValue: String?): String {
         return props.getProperty(key, defaultValue)
     }
 
     @JvmStatic
+    @Synchronized
     fun get(key: String?): String {
         return props.getProperty(key)
     }
 
     @JvmStatic
-    fun <T> set(key: String?, value: T) {
+    @Synchronized
+    fun <T> put(key: String?, value: T) {
+        if (key.isNullOrBlank()) {
+            return
+        }
         props.setProperty(key, value.toString())
+    }
+
+    @JvmStatic
+    fun <T> set(key: String?, value: T) {
+        put(key, value)
         save()
     }
 
     @JvmStatic
+    @Synchronized
     fun <T> get(key: String?, clazz: Class<T>, defaultValue: T): T {
         val value = props.getProperty(key)
         return if (value != null) {
@@ -104,6 +132,7 @@ object ConfigManager {
     }
 
     @JvmStatic
+    @Synchronized
     fun <T> get(key: String?, clazz: Class<T>): T? {
         val value = props.getProperty(key)
         return if (value != null) {
@@ -129,20 +158,33 @@ object ConfigManager {
      * 将对象序列化为 JSON 并保存
      */
     @JvmStatic
-    fun <T> setObject(key: String?, value: T) {
+    @Synchronized
+    fun <T> putObject(key: String?, value: T) {
+        if (key.isNullOrBlank()) {
+            return
+        }
         try {
             val json = gson.toJson(value)
             props.setProperty(key, json)
-            save()
         } catch (e: Exception) {
             LOG.error("Failed to serialize object for key: $key", e)
         }
     }
 
     /**
+     * 将对象序列化为 JSON 并保存
+     */
+    @JvmStatic
+    fun <T> setObject(key: String?, value: T) {
+        putObject(key, value)
+        save()
+    }
+
+    /**
      * 从 JSON 反序列化对象
      */
     @JvmStatic
+    @Synchronized
     fun <T> getObject(key: String?, clazz: Class<T>, defaultValue: T): T {
         val json = props.getProperty(key)
         return if (json != null) {

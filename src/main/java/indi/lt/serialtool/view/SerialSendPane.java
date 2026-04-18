@@ -33,4 +33,8 @@ public class SerialSendPane extends SplitPane {
     public static SerialSendPane getInstance() {
         return serialSendPane;
     }
+
+    public SerialSendCtrl getController() {
+        return controller;
+    }
 }

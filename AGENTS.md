@@ -84,7 +84,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - 新组件优先使用 Kotlin
    - 控制器根据需要选择 Kotlin 或 Java
    - 注意 Kotlin 和 Java 之间的互操作性
-
+5. **文件编码**
+   - 文件编码必须使用UTF-8
 
 ## 已知问题
 
@@ -104,4 +105,3 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 当需要执行`gradle`命令进行编译验证时，将需要验证的命令返回给我，不用擅自执行
 
 ## 外部规则引用
-@RTK.md

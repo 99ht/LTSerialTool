@@ -2,6 +2,7 @@ package indi.lt.serialtool.controller;
 
 import github.nonoas.jfx.flat.ui.theme.Theme;
 import indi.lt.serialtool.SerialApplication;
+import indi.lt.serialtool.component.CommandTableView;
 import indi.lt.serialtool.global.ConfigManager;
 import indi.lt.serialtool.global.ThemeManager;
 import indi.lt.serialtool.view.AsciiStage;
@@ -26,7 +27,9 @@ import java.awt.Desktop;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -42,6 +45,8 @@ import static org.kordamp.ikonli.material2.Material2OutlinedMZ.SETTINGS;
 import static org.kordamp.ikonli.material2.Material2OutlinedMZ.TUNE;
 
 public class MainController implements Initializable {
+    private static final String KEY_AUTO_SAVE = "main.form.autoSave";
+    private static final String KEY_BUFFER_WARNING = "main.form.bufferWarning";
 
     private final Logger LOG = LogManager.getLogger(MainController.class);
 
@@ -56,6 +61,7 @@ public class MainController implements Initializable {
     public MenuButton mbSetting;
 
     public CheckMenuItem autoSaveCheck;
+    public CheckMenuItem bufferWarningCheck;
 
     @FXML
     public MenuItem menuReceiveTimeout;
@@ -78,6 +84,7 @@ public class MainController implements Initializable {
     private TabPane tabRootPane;
 
     private ToggleGroup themeGroup;
+    private final List<SerialReceivePane> receivePanes = new ArrayList<>();
 
 
     public TabPane getMenuBar() {
@@ -90,6 +97,8 @@ public class MainController implements Initializable {
 
         SerialReceivePane serialReceivePane1 = new SerialReceivePane("串口1:", "serialKey1");
         SerialReceivePane serialReceivePane2 = new SerialReceivePane("串口2:", "serialKey2");
+        receivePanes.add(serialReceivePane1);
+        receivePanes.add(serialReceivePane2);
 
         String dividePostions = ConfigManager.get(KEY_RECEIVE_SPLIT_PANE_DIVIDER_POSITIONS,"0.5");
         spReceive.getItems().addAll(serialReceivePane1, serialReceivePane2);
@@ -145,6 +154,10 @@ public class MainController implements Initializable {
             }
         });
 
+        autoSaveCheck.setSelected(ConfigManager.get(KEY_AUTO_SAVE, Boolean.class, false));
+        bufferWarningCheck.setSelected(ConfigManager.get(KEY_BUFFER_WARNING, Boolean.class, false));
+        autoSaveCheck.selectedProperty().addListener((obs, oldVal, newVal) -> ConfigManager.put(KEY_AUTO_SAVE, String.valueOf(newVal)));
+        bufferWarningCheck.selectedProperty().addListener((obs, oldVal, newVal) -> ConfigManager.put(KEY_BUFFER_WARNING, String.valueOf(newVal)));
         autoSaveCheck.setOnAction(e -> {
             boolean enabled = autoSaveCheck.isSelected();
             System.out.println("自动保存: " + enabled);
@@ -171,7 +184,7 @@ public class MainController implements Initializable {
                 if (timeoutMs <= 0) {
                     throw new NumberFormatException("timeoutMs <= 0");
                 }
-                ConfigManager.set(KEY_RECEIVE_TIMEOUT_MS, String.valueOf(timeoutMs));
+                ConfigManager.put(KEY_RECEIVE_TIMEOUT_MS, String.valueOf(timeoutMs));
                 refreshReceiveTimeoutMenuText();
             } catch (NumberFormatException ex) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -229,10 +242,24 @@ public class MainController implements Initializable {
     @FXML
     public void addNewTab(ActionEvent actionEvent) {
         ObservableList<Tab> tabs = tabRootPane.getTabs();
-        SerialReceivePane serialReceivePane = new SerialReceivePane("串口接收" + tabs.size(), "");
+        SerialReceivePane serialReceivePane = new SerialReceivePane("串口接收" + tabs.size(), "serialKey" + tabs.size());
+        receivePanes.add(serialReceivePane);
         Tab tab = new Tab("串口接收" + tabs.size());
         tab.setContent(serialReceivePane);
         tabs.add(tab);
         tabRootPane.getSelectionModel().select(tab);
+    }
+
+    public void persistFormStateToConfig() {
+        ConfigManager.put(KEY_AUTO_SAVE, String.valueOf(autoSaveCheck.isSelected()));
+        ConfigManager.put(KEY_BUFFER_WARNING, String.valueOf(bufferWarningCheck.isSelected()));
+        serialSendPane.getController().persistFormStateToConfig();
+        for (SerialReceivePane pane : receivePanes) {
+            pane.getController().persistFormStateToConfig();
+        }
+    }
+
+    public List<CommandTableView.CommandItem> snapshotCommandTable() {
+        return serialSendPane.getController().snapshotCommandTable();
     }
 }
